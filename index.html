@@ -210,7 +210,12 @@ select.form-input{appearance:none;background-image:url("data:image/svg+xml,%3Csv
 </div>
 
 <script>
+/* ========================================================
+   AYARLAR
+   ======================================================== */
 const CLIENT_ID = '1049060962622-n298h98ccbsmohihs4hv9jmjafhvv732.apps.googleusercontent.com';
+const notConfigured = false;
+/* ======================================================== */
 
 const SCOPES = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email';
 const FILE_NAME = 'emlak_crm_data.json';
@@ -240,6 +245,7 @@ let S = {
 
 let saveTimer=null, notifTimer=null, tokenClient=null;
 
+// ======= UTILS =======
 const $=id=>document.getElementById(id);
 const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const uid=()=>Math.random().toString(36).slice(2)+Date.now().toString(36);
@@ -252,9 +258,10 @@ function toast(msg,type='info'){S.toast={msg,type};render();setTimeout(()=>{S.to
 function go(screen,params={}){if(S.screen!=='loading')S.history.push(S.screen);S.screen=screen;S.params=params;render();window.scrollTo(0,0);}
 function back(){S.screen=S.history.pop()||'dashboard';S.params={};render();window.scrollTo(0,0);}
 
+// ======= GOOGLE AUTH =======
 function initGIS(){
   if(typeof google==='undefined'||!google.accounts){setTimeout(initGIS,150);return;}
-  go('login');
+  if(!CLIENT_ID){go('login');return;}
   tokenClient=google.accounts.oauth2.initTokenClient({
     client_id:CLIENT_ID, scope:SCOPES,
     callback:async(resp)=>{
@@ -270,6 +277,7 @@ function initGIS(){
       }catch(e){toast('Hata: '+e.message,'error');go('login');}
     }
   });
+  go('login');
 }
 
 function showLoading(msg){$('app').innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:16px;color:var(--muted);font-size:15px;background:#f0f4f8"><div style="width:48px;height:48px;border:3px solid #e2e8f0;border-top-color:var(--blue);border-radius:50%;animation:spin 1s linear infinite"></div><style>@keyframes spin{to{transform:rotate(360deg)}}</style><span>${esc(msg)}</span></div>`;}
@@ -290,6 +298,7 @@ async function fetchUser(){
   S.user=await r.json();
 }
 
+// ======= DRIVE =======
 async function gFetch(url,opts={}){
   const r=await fetch(url,{...opts,headers:{Authorization:'Bearer '+S.token,...(opts.headers||{})}});
   if(r.status===401){toast('Oturum süresi doldu. Lütfen tekrar giriş yapın.','error');signOut();throw new Error('Auth expired');}
@@ -340,6 +349,7 @@ function scheduleSave(){
   },1800);
 }
 
+// ======= NOTIFICATIONS =======
 function startChecks(){
   if('Notification'in window&&Notification.permission==='default')Notification.requestPermission();
   checkAll();
@@ -371,6 +381,7 @@ function notify(title,body){
   if('Notification'in window&&Notification.permission==='granted')new Notification(title,{body,icon:'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><text y=%2228%22 font-size=%2228%22>🏠</text></svg>'});
 }
 
+// ======= RENDER =======
 function render(){
   const html={
     loading:`<div style="display:flex;align-items:center;justify-content:center;min-height:100vh">Yükleniyor...</div>`,
@@ -389,6 +400,8 @@ function render(){
     matching:buildMatching(),
     pipeline:buildPipeline(),
   };
+  const mainScreens=['dashboard','contacts','properties','messages','appointments','matching','pipeline'];
+  const isMain=mainScreens.includes(S.screen);
   $('app').innerHTML=`
     <div class="app">
       ${S.toast?`<div class="toast toast-${S.toast.type}">${esc(S.toast.msg)}</div>`:''}
@@ -440,18 +453,23 @@ function buildUserMenu(){
   </div>`;
 }
 
+// ======= LOGIN =======
 function buildLogin(){
   return `<div class="login-screen">
     <div class="login-logo"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></div>
     <div class="login-title">Emlak CRM</div>
     <div class="login-sub">Müşteri ve mülk yönetiminiz,\nGoogle Drive'ınızda güvende</div>
-    <button class="login-btn" onclick="signIn()">
-      <svg width="22" height="22" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-      Google ile Giriş Yap
-    </button>
+    ${notConfigured?
+      `<div class="config-warning"><b>⚠️ Kurulum Gerekli</b>Uygulamayı kullanmak için önce Google Client ID almanız gerekiyor.<br><br>Birlikte gelen <strong>kurulum_rehberi.html</strong> dosyasını açın ve adımları takip edin. Yaklaşık 15 dakika sürer, sadece bir kez yapılır!</div>`
+      :`<button class="login-btn" onclick="signIn()">
+        <svg width="22" height="22" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Google ile Giriş Yap
+      </button>`
+    }
   </div>`;
 }
 
+// ======= DASHBOARD =======
 function buildDashboard(){
   const cs=S.data.contacts;
   const buyers=cs.filter(x=>x.type==='buyer').length;
@@ -541,6 +559,7 @@ function buildDashboard(){
   </div>`;
 }
 
+// ======= CONTACTS =======
 function buildContacts(){
   let cs=S.data.contacts;
   if(S.filter.type!=='all')cs=cs.filter(x=>x.type===S.filter.type);
@@ -585,6 +604,7 @@ function openContactForm(type){
   go('contact-form');
 }
 
+// ======= CONTACT DETAIL =======
 function buildContactDetail(){
   const c=S.data.contacts.find(x=>x.id===S.params.id);
   if(!c)return buildContacts();
@@ -686,6 +706,7 @@ function sendTemplate(contactId){
   go('messages');
 }
 
+// ======= CONTACT FORM =======
 function buildContactForm(){
   const f=S.params.form||{type:'buyer'};
   const isEdit=!!S.params.editId;
@@ -738,6 +759,7 @@ function saveContact(){
   back();
 }
 
+// ======= PROPERTIES =======
 function buildProperties(){
   return `<div class="content">
     ${buildHeader('Mülkler')}
@@ -750,9 +772,13 @@ function buildProperties(){
             <div class="prop-title">${esc(p.title||p.propType||'Mülk')}</div>
             <span class="badge badge-${p.status||'avail'}">${{avail:'Satışta',reserved:'Rezerve',sold:'Satıldı'}[p.status||'avail']}</span>
           </div>
-          <div class="prop-meta">${[p.propType,p.district,p.rooms,p.sqm?p.sqm+'m²':''].filter(Boolean).join(' · ')}</div>
+          <div class="prop-meta">
+            ${p.adNumber ? `<span style="color:var(--blue);font-weight:600">İlan No: ${esc(p.adNumber)}</span><br>` : ''}
+            ${[p.propType,p.district,p.rooms,p.sqm?p.sqm+'m²':''].filter(Boolean).join(' · ')}
+          </div>
           ${owner?`<div class="prop-meta" style="margin-top:2px">👤 ${esc(owner.name)}</div>`:''}
           ${p.price?`<div class="prop-price">${numFmt(p.price)}</div>`:''}
+          ${p.link ? `<div style="font-size:12px;color:var(--blue);margin-top:6px;text-decoration:underline" onclick="event.stopPropagation(); window.open('${esc(p.link)}', '_blank')">🔗 İlana Git</div>` : ''}
         </div>`;}).join('')}
     </div>
     <button class="fab" onclick="go('property-form',{form:{status:'avail'},editId:null})">+</button>
@@ -767,6 +793,7 @@ function buildPropertyForm(){
     ${buildHeader(isEdit?'Mülkü Düzenle':'Yeni Mülk',true)}
     <div class="form-body">
       <div class="form-group"><label class="form-label">Mülk Başlığı</label><input class="form-input" type="text" placeholder="Karşıyaka 3+1 Daire" value="${esc(f.title||'')}" oninput="setF('title',this.value)"></div>
+      <div class="form-group"><label class="form-label">İlan Numarası</label><input class="form-input" type="text" placeholder="123456789" value="${esc(f.adNumber||'')}" oninput="setF('adNumber',this.value)"></div>
       <div class="form-group"><label class="form-label">Satıcı (Sahibi)</label><select class="form-input" onchange="setF('ownerId',this.value)"><option value="">Seçiniz</option>${sellers.map(s=>`<option value="${s.id}" ${f.ownerId===s.id?'selected':''}>${esc(s.name)}</option>`).join('')}</select></div>
       <div class="form-group"><label class="form-label">Mülk Türü</label><select class="form-input" onchange="setF('propType',this.value)"><option value="">Seçiniz</option>${PROP_TYPES.map(p=>`<option value="${p}" ${f.propType===p?'selected':''}>${p}</option>`).join('')}</select></div>
       <div class="row2">
@@ -808,6 +835,7 @@ function deleteProperty(id){
   scheduleSave();back();
 }
 
+// ======= MESSAGES =======
 function buildMessages(){
   const tab=S.params.tab||'templates';
   return `<div class="content">
@@ -956,6 +984,7 @@ function saveScheduled(){
   scheduleSave();toast('Mesaj zamanlandı!','success');S.params={tab:'scheduled'};back();
 }
 
+// ======= APPOINTMENTS =======
 function buildAppointments(){
   const apts=[...S.data.appointments].sort((a,b)=>a.date.localeCompare(b.date));
   const pending=apts.filter(x=>!x.done);
@@ -1023,6 +1052,7 @@ function saveApt(){
   scheduleSave();toast('Randevu kaydedildi','success');S.params={};back();
 }
 
+// ======= PIPELINE =======
 function buildPipeline(){
   const stages=['new','contacted','offer','closed'];
   const cs=S.data.contacts;
@@ -1044,6 +1074,7 @@ function buildPipeline(){
   </div>`;
 }
 
+// ======= MATCHING =======
 function buildMatching(){
   const buyers=S.data.contacts.filter(x=>x.type==='buyer'&&x.status!=='closed');
   const sellers=S.data.contacts.filter(x=>x.type==='seller');
@@ -1090,6 +1121,7 @@ function buildMatching(){
   </div>`;
 }
 
+// ======= INIT =======
 window.addEventListener('load', initGIS);
 </script>
 <script src="https://accounts.google.com/gsi/client" async></script>
