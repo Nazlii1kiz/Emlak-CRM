@@ -785,6 +785,15 @@ function buildProperties(){
   </div>`;
 }
 
+function fetchLinkData(){
+  const link = $('linkInput').value;
+  if(!link){ toast('Önce bir link yapıştırın','error'); return; }
+  if(!link.includes('sahibinden.com')){ toast('Sadece Sahibinden linkleri desteklenir','error'); return; }
+  
+  // Teknik engeli anlatan ve eklenti fikrini sunan bilgilendirme
+  alert("Kanka teknik bir durum var: Sahibinden.com çok sıkı bir 'Bot Koruması' (Cloudflare) kullanıyor. Bu yüzden doğrudan tarayıcı içinden (HTML/JS ile) veri çekmek güvenlik kalkanı (CORS) nedeniyle engelleniyor.\n\nBunu aşmanın TEK profesyonel yolu, bu CRM için özel bir 'Google Chrome Eklentisi' yazmak.\n\nEğer istersen bir sonraki aşamada tek tıkla Sahibinden'den buraya veri şutlayacak o eklentiyi de yazabiliriz!");
+}
+
 function buildPropertyForm(){
   const f=S.params.form||{status:'avail'};
   const isEdit=!!S.params.editId;
@@ -794,6 +803,15 @@ function buildPropertyForm(){
     <div class="form-body">
       <div class="form-group"><label class="form-label">Mülk Başlığı</label><input class="form-input" type="text" placeholder="Karşıyaka 3+1 Daire" value="${esc(f.title||'')}" oninput="setF('title',this.value)"></div>
       <div class="form-group"><label class="form-label">İlan Numarası</label><input class="form-input" type="text" placeholder="123456789" value="${esc(f.adNumber||'')}" oninput="setF('adNumber',this.value)"></div>
+      
+      <div class="form-group">
+        <label class="form-label">İlan Linki</label>
+        <div style="display:flex;gap:8px">
+          <input class="form-input" style="flex:1" type="url" id="linkInput" placeholder="https://sahibinden.com/..." value="${esc(f.link||'')}" oninput="setF('link',this.value)">
+          <button class="btn-secondary" style="padding:0 14px;white-space:nowrap" onclick="fetchLinkData()">🔍 Çek</button>
+        </div>
+      </div>
+      
       <div class="form-group"><label class="form-label">Satıcı (Sahibi)</label><select class="form-input" onchange="setF('ownerId',this.value)"><option value="">Seçiniz</option>${sellers.map(s=>`<option value="${s.id}" ${f.ownerId===s.id?'selected':''}>${esc(s.name)}</option>`).join('')}</select></div>
       <div class="form-group"><label class="form-label">Mülk Türü</label><select class="form-input" onchange="setF('propType',this.value)"><option value="">Seçiniz</option>${PROP_TYPES.map(p=>`<option value="${p}" ${f.propType===p?'selected':''}>${p}</option>`).join('')}</select></div>
       <div class="row2">
@@ -809,7 +827,6 @@ function buildPropertyForm(){
         <div class="type-opt ${f.status==='reserved'?'sel-reserved':''}" onclick="setF('status','reserved')">Rezerve</div>
         <div class="type-opt ${f.status==='sold'?'sel-sold':''}" onclick="setF('status','sold')">Satıldı</div>
       </div></div>
-      <div class="form-group"><label class="form-label">İlan Linki</label><input class="form-input" type="url" placeholder="https://sahibinden.com/..." value="${esc(f.link||'')}" oninput="setF('link',this.value)"></div>
       <div class="form-group"><label class="form-label">Notlar</label><textarea class="form-input" rows="3" oninput="setF('notes',this.value)">${esc(f.notes||'')}</textarea></div>
       <button class="btn-primary" onclick="saveProperty()">${isEdit?'Güncelle':'Kaydet'}</button>
       ${isEdit?`<button class="btn-danger" onclick="deleteProperty('${S.params.editId}')">Mülkü Sil</button>`:''}
