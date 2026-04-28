@@ -208,16 +208,10 @@ select.form-input{appearance:none;background-image:url("data:image/svg+xml,%3Csv
 <div class="app" id="app">
   <div style="display:flex;align-items:center;justify-content:center;min-height:100vh;color:#888;font-size:16px">Yükleniyor...</div>
 </div>
- 
+
 <script>
-/* ========================================================
-   AYARLAR - Aşağıdaki satırı doldurun!
-   Google Cloud Console'dan aldığınız Client ID'yi yazın.
-   Kurulum rehberine bakın: kurulum_rehberi.html
-   ======================================================== */
 const CLIENT_ID = '1049060962622-n298h98ccbsmohihs4hv9jmjafhvv732.apps.googleusercontent.com';
-/* ======================================================== */
- 
+
 const SCOPES = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email';
 const FILE_NAME = 'emlak_crm_data.json';
 const MONTHS_TR = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
@@ -225,7 +219,7 @@ const STATUS_LABELS = {new:'Yeni',contacted:'Görüşüldü',offer:'Teklif Veril
 const HEAT_LABELS = {hot:'🔴 Sıcak',warm:'🟡 Ilık',cold:'🔵 Soğuk'};
 const PROP_TYPES = ['Daire','Villa','Arsa','İşyeri','Yazlık','Müstakil Ev','Ofis'];
 const ROOMS = ['1+0','1+1','2+1','3+1','3+2','4+1','4+2','5+1','5+2','6+'];
- 
+
 let S = {
   token:null, user:null, fileId:null, saving:false,
   screen:'loading', params:{}, history:[], toast:null,
@@ -243,10 +237,9 @@ let S = {
     scheduled:[]
   }
 };
- 
+
 let saveTimer=null, notifTimer=null, tokenClient=null;
- 
-// ======= UTILS =======
+
 const $=id=>document.getElementById(id);
 const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const uid=()=>Math.random().toString(36).slice(2)+Date.now().toString(36);
@@ -254,15 +247,14 @@ const today=()=>new Date().toISOString().slice(0,10);
 const fmtDate=d=>{if(!d)return '-';const dt=new Date(d);return `${dt.getDate()} ${MONTHS_TR[dt.getMonth()]} ${dt.getFullYear()}`;};
 const initials=n=>(n||'?').split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
 const numFmt=n=>{if(!n)return '-';const v=parseFloat(String(n).replace(/[^0-9.]/g,''));if(isNaN(v))return n;if(v>=1000000)return (v/1000000).toFixed(2).replace(/\.?0+$/,'')+'M ₺';if(v>=1000)return Math.round(v/1000)+'K ₺';return v+'₺';};
- 
+
 function toast(msg,type='info'){S.toast={msg,type};render();setTimeout(()=>{S.toast=null;render();},3000);}
 function go(screen,params={}){if(S.screen!=='loading')S.history.push(S.screen);S.screen=screen;S.params=params;render();window.scrollTo(0,0);}
 function back(){S.screen=S.history.pop()||'dashboard';S.params={};render();window.scrollTo(0,0);}
- 
-// ======= GOOGLE AUTH =======
+
 function initGIS(){
   if(typeof google==='undefined'||!google.accounts){setTimeout(initGIS,150);return;}
- if(!CLIENT_ID){go('login');return;}
+  go('login');
   tokenClient=google.accounts.oauth2.initTokenClient({
     client_id:CLIENT_ID, scope:SCOPES,
     callback:async(resp)=>{
@@ -278,11 +270,10 @@ function initGIS(){
       }catch(e){toast('Hata: '+e.message,'error');go('login');}
     }
   });
-  go('login');
 }
- 
+
 function showLoading(msg){$('app').innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:16px;color:var(--muted);font-size:15px;background:#f0f4f8"><div style="width:48px;height:48px;border:3px solid #e2e8f0;border-top-color:var(--blue);border-radius:50%;animation:spin 1s linear infinite"></div><style>@keyframes spin{to{transform:rotate(360deg)}}</style><span>${esc(msg)}</span></div>`;}
- 
+
 async function signIn(){
   if(!tokenClient){toast('Lütfen bekleyin...');return;}
   tokenClient.requestAccessToken({prompt:'select_account'});
@@ -292,14 +283,13 @@ async function signOut(){
   S.token=null;S.user=null;S.fileId=null;S.showUserMenu=false;
   clearInterval(notifTimer);go('login');
 }
- 
+
 async function fetchUser(){
   const r=await fetch('https://www.googleapis.com/oauth2/v2/userinfo',{headers:{Authorization:'Bearer '+S.token}});
   if(!r.ok)throw new Error('Kullanıcı bilgisi alınamadı');
   S.user=await r.json();
 }
- 
-// ======= DRIVE =======
+
 async function gFetch(url,opts={}){
   const r=await fetch(url,{...opts,headers:{Authorization:'Bearer '+S.token,...(opts.headers||{})}});
   if(r.status===401){toast('Oturum süresi doldu. Lütfen tekrar giriş yapın.','error');signOut();throw new Error('Auth expired');}
@@ -308,7 +298,7 @@ async function gFetch(url,opts={}){
   if(ct.includes('json'))return r.json();
   return r.text();
 }
- 
+
 async function loadOrCreate(){
   const list=await gFetch(`https://www.googleapis.com/drive/v3/files?q=name='${FILE_NAME}' and trashed=false&fields=files(id)&spaces=drive`);
   if(list.files&&list.files.length>0){
@@ -333,7 +323,7 @@ async function loadOrCreate(){
     S.fileId=f.id;
   }
 }
- 
+
 function scheduleSave(){
   clearTimeout(saveTimer);
   S.saving=true;render();
@@ -349,8 +339,7 @@ function scheduleSave(){
     finally{S.saving=false;render();}
   },1800);
 }
- 
-// ======= NOTIFICATIONS =======
+
 function startChecks(){
   if('Notification'in window&&Notification.permission==='default')Notification.requestPermission();
   checkAll();
@@ -381,8 +370,7 @@ function checkAll(){
 function notify(title,body){
   if('Notification'in window&&Notification.permission==='granted')new Notification(title,{body,icon:'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><text y=%2228%22 font-size=%2228%22>🏠</text></svg>'});
 }
- 
-// ======= RENDER =======
+
 function render(){
   const html={
     loading:`<div style="display:flex;align-items:center;justify-content:center;min-height:100vh">Yükleniyor...</div>`,
@@ -401,8 +389,6 @@ function render(){
     matching:buildMatching(),
     pipeline:buildPipeline(),
   };
-  const mainScreens=['dashboard','contacts','properties','messages','appointments','matching','pipeline'];
-  const isMain=mainScreens.includes(S.screen);
   $('app').innerHTML=`
     <div class="app">
       ${S.toast?`<div class="toast toast-${S.toast.type}">${esc(S.toast.msg)}</div>`:''}
@@ -413,7 +399,7 @@ function render(){
     </div>
   `;
 }
- 
+
 function buildNav(){
   const tabs=[
     {id:'dashboard',icon:'🏠',label:'Ana Sayfa'},
@@ -427,7 +413,7 @@ function buildNav(){
       <span class="nav-icon">${t.icon}</span><span>${t.label}</span>
     </button>`).join('')}</nav>`;
 }
- 
+
 function buildHeader(title,hasBack=false,actionBtn=''){
   const userHtml=S.user?`<div class="user-chip" onclick="S.showUserMenu=true;render()">
     <div class="user-avatar">${S.user.picture?`<img src="${esc(S.user.picture)}" onerror="this.style.display='none';this.parentNode.textContent='${initials(S.user.name)}'">`:initials(S.user.name)}</div>
@@ -439,7 +425,7 @@ function buildHeader(title,hasBack=false,actionBtn=''){
     ${actionBtn||userHtml}
   </div>`;
 }
- 
+
 function buildUserMenu(){
   return `<div class="overlay" onclick="S.showUserMenu=false;render()">
     <div class="bottom-sheet" onclick="event.stopPropagation()">
@@ -453,25 +439,19 @@ function buildUserMenu(){
     </div>
   </div>`;
 }
- 
-// ======= LOGIN =======
+
 function buildLogin(){
-  const const notConfigured = false;
   return `<div class="login-screen">
     <div class="login-logo"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></div>
     <div class="login-title">Emlak CRM</div>
     <div class="login-sub">Müşteri ve mülk yönetiminiz,\nGoogle Drive'ınızda güvende</div>
-    ${notConfigured?
-      `<div class="config-warning"><b>⚠️ Kurulum Gerekli</b>Uygulamayı kullanmak için önce Google Client ID almanız gerekiyor.<br><br>Birlikte gelen <strong>kurulum_rehberi.html</strong> dosyasını açın ve adımları takip edin. Yaklaşık 15 dakika sürer, sadece bir kez yapılır!</div>`
-      :`<button class="login-btn" onclick="signIn()">
-        <svg width="22" height="22" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-        Google ile Giriş Yap
-      </button>`
-    }
+    <button class="login-btn" onclick="signIn()">
+      <svg width="22" height="22" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+      Google ile Giriş Yap
+    </button>
   </div>`;
 }
- 
-// ======= DASHBOARD =======
+
 function buildDashboard(){
   const cs=S.data.contacts;
   const buyers=cs.filter(x=>x.type==='buyer').length;
@@ -483,7 +463,7 @@ function buildDashboard(){
   const upcoming=S.data.appointments.filter(a=>!a.done&&a.date>todayStr).slice(0,3);
   const hotLeads=cs.filter(x=>x.heat==='hot'&&x.status!=='closed').slice(0,3);
   const pendingSched=S.data.scheduled.filter(x=>!x.sent).length;
- 
+
   return `<div class="content">
     ${buildHeader('Emlak CRM')}
     <div style="padding:14px 16px 0">
@@ -560,8 +540,7 @@ function buildDashboard(){
     </div>
   </div>`;
 }
- 
-// ======= CONTACTS =======
+
 function buildContacts(){
   let cs=S.data.contacts;
   if(S.filter.type!=='all')cs=cs.filter(x=>x.type===S.filter.type);
@@ -600,13 +579,12 @@ function buildContacts(){
     <button class="fab" onclick="openContactForm('buyer')">+</button>
   </div>`;
 }
- 
+
 function openContactForm(type){
   S.params={form:{type:type||'buyer'},editId:null};
   go('contact-form');
 }
- 
-// ======= CONTACT DETAIL =======
+
 function buildContactDetail(){
   const c=S.data.contacts.find(x=>x.id===S.params.id);
   if(!c)return buildContacts();
@@ -674,7 +652,7 @@ function buildContactDetail(){
     </div>
   </div>`;
 }
- 
+
 function updateStatus(id,status){
   const c=S.data.contacts.find(x=>x.id===id);
   if(c){c.status=status;scheduleSave();render();}
@@ -698,6 +676,7 @@ function addAptForContact(id){
   S.params={form:{contactId:id},editId:null};
   go('appointment-form');
 }
+const fmtPhone=p=>String(p).replace(/\D/g,'');
 function waOpen(num,msg){
   const txt=msg?encodeURIComponent(msg):'';
   window.open(`https://wa.me/90${num}${txt?'?text='+txt:''}`, '_blank');
@@ -706,8 +685,7 @@ function sendTemplate(contactId){
   S.params={contactId};
   go('messages');
 }
- 
-// ======= CONTACT FORM =======
+
 function buildContactForm(){
   const f=S.params.form||{type:'buyer'};
   const isEdit=!!S.params.editId;
@@ -741,9 +719,9 @@ function buildContactForm(){
     </div>
   </div>`;
 }
- 
+
 function setF(k,v){S.params.form={...(S.params.form||{}), [k]:v};}
- 
+
 function saveContact(){
   const f=S.params.form||{};
   if(!f.name?.trim()){toast('Ad soyad zorunludur','error');return;}
@@ -759,8 +737,7 @@ function saveContact(){
   S.params={};
   back();
 }
- 
-// ======= PROPERTIES =======
+
 function buildProperties(){
   return `<div class="content">
     ${buildHeader('Mülkler')}
@@ -781,7 +758,7 @@ function buildProperties(){
     <button class="fab" onclick="go('property-form',{form:{status:'avail'},editId:null})">+</button>
   </div>`;
 }
- 
+
 function buildPropertyForm(){
   const f=S.params.form||{status:'avail'};
   const isEdit=!!S.params.editId;
@@ -812,7 +789,7 @@ function buildPropertyForm(){
     </div>
   </div>`;
 }
- 
+
 function saveProperty(){
   const f=S.params.form||{};
   if(!f.propType&&!f.title){toast('Mülk türü veya başlık giriniz','error');return;}
@@ -830,8 +807,7 @@ function deleteProperty(id){
   S.data.properties=S.data.properties.filter(x=>x.id!==id);
   scheduleSave();back();
 }
- 
-// ======= MESSAGES =======
+
 function buildMessages(){
   const tab=S.params.tab||'templates';
   return `<div class="content">
@@ -843,7 +819,7 @@ function buildMessages(){
     ${tab==='templates'?buildTemplates():buildScheduled()}
   </div>`;
 }
- 
+
 function buildTemplates(){
   return `<div style="padding:0 16px">
     <div class="info-row"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Şablonlarda {isim}, {telefon}, {semt} gibi değişkenler kullanabilirsiniz.</div>
@@ -860,7 +836,7 @@ function buildTemplates(){
     <button class="btn-primary" onclick="go('template-form',{form:{},editId:null})">+ Yeni Şablon</button>
   </div>`;
 }
- 
+
 function buildScheduled(){
   const pending=S.data.scheduled.filter(x=>!x.sent);
   const sent=S.data.scheduled.filter(x=>x.sent);
@@ -882,7 +858,7 @@ function buildScheduled(){
     </div>`).join('')}
   </div>`;
 }
- 
+
 function bulkSend(templateId){
   const tpl=S.data.templates.find(t=>t.id===templateId);
   if(!tpl)return;
@@ -896,7 +872,7 @@ function bulkSend(templateId){
     },i*500);
   });
 }
- 
+
 function editTemplate(id){
   const t=S.data.templates.find(x=>x.id===id);
   if(t)go('template-form',{form:{...t},editId:id});
@@ -911,7 +887,7 @@ function deleteSched(id){
   S.data.scheduled=S.data.scheduled.filter(x=>x.id!==id);
   scheduleSave();render();
 }
- 
+
 function buildTemplateForm(){
   const f=S.params.form||{};
   const isEdit=!!S.params.editId;
@@ -925,7 +901,7 @@ function buildTemplateForm(){
     </div>
   </div>`;
 }
- 
+
 function saveTemplate(){
   const f=S.params.form||{};
   if(!f.name?.trim()||!f.text?.trim()){toast('Ad ve metin zorunludur','error');return;}
@@ -936,7 +912,7 @@ function saveTemplate(){
   }
   scheduleSave();toast('Kaydedildi','success');S.params={tab:'templates'};back();
 }
- 
+
 function buildScheduleForm(){
   const f=S.params.form||{repeatType:'none'};
   const tpls=S.data.templates;
@@ -962,14 +938,14 @@ function buildScheduleForm(){
     </div>
   </div>`;
 }
- 
+
 function toggleRecipient(id,checked){
   let r=S.params.form?.recipientIds||[];
   if(r==='all')r=[];
   if(checked)r=[...r,id]; else r=r.filter(x=>x!==id);
   setF('recipientIds',r);
 }
- 
+
 function saveScheduled(){
   const f=S.params.form||{};
   if(!f.name?.trim()){toast('Mesaj adı zorunludur','error');return;}
@@ -979,8 +955,7 @@ function saveScheduled(){
   S.data.scheduled.push({id:uid(),name:f.name,templateId:f.templateId,scheduledAt,repeatType:f.repeatType||'none',recipientIds:recipients,sent:false});
   scheduleSave();toast('Mesaj zamanlandı!','success');S.params={tab:'scheduled'};back();
 }
- 
-// ======= APPOINTMENTS =======
+
 function buildAppointments(){
   const apts=[...S.data.appointments].sort((a,b)=>a.date.localeCompare(b.date));
   const pending=apts.filter(x=>!x.done);
@@ -1012,10 +987,10 @@ function buildAppointments(){
     <button class="fab" onclick="go('appointment-form',{form:{},editId:null})">+</button>
   </div>`;
 }
- 
+
 function markAptDone(id){const a=S.data.appointments.find(x=>x.id===id);if(a){a.done=true;scheduleSave();render();}}
 function deleteApt(id){if(!confirm('Randevuyu sil?'))return;S.data.appointments=S.data.appointments.filter(x=>x.id!==id);scheduleSave();render();}
- 
+
 function buildAptForm(){
   const f=S.params.form||{};
   const isEdit=!!S.params.editId;
@@ -1035,7 +1010,7 @@ function buildAptForm(){
     </div>
   </div>`;
 }
- 
+
 function saveApt(){
   const f=S.params.form||{};
   if(!f.contactId){toast('Müşteri seçiniz','error');return;}
@@ -1047,8 +1022,7 @@ function saveApt(){
   }
   scheduleSave();toast('Randevu kaydedildi','success');S.params={};back();
 }
- 
-// ======= PIPELINE =======
+
 function buildPipeline(){
   const stages=['new','contacted','offer','closed'];
   const cs=S.data.contacts;
@@ -1069,8 +1043,7 @@ function buildPipeline(){
     </div>
   </div>`;
 }
- 
-// ======= MATCHING =======
+
 function buildMatching(){
   const buyers=S.data.contacts.filter(x=>x.type==='buyer'&&x.status!=='closed');
   const sellers=S.data.contacts.filter(x=>x.type==='seller');
@@ -1116,8 +1089,7 @@ function buildMatching(){
     </div>
   </div>`;
 }
- 
-// ======= INIT =======
+
 window.addEventListener('load', initGIS);
 </script>
 <script src="https://accounts.google.com/gsi/client" async></script>
