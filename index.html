@@ -205,7 +205,7 @@ let S={
   token:null,user:null,fileId:null,saving:false,
   screen:'loading',params:{},history:[],toast:null,
   showUserMenu:false,showBulkSheet:false,showPropBulkSheet:false,
-  filter:{type:'all',status:'all',propObj:'all'},
+  filter:{type:'all',status:'all',propObj:'all'}, 
   search:'',selectMode:false,selectedIds:[],
   propSelectMode:false,selectedPropIds:[],
   data:{
@@ -387,7 +387,7 @@ function bulkSetHeat(heat){
   S.showBulkSheet=false;S.selectedIds=[];S.selectMode=false;scheduleSave();toast('Sıcaklık güncellendi','success');render();
 }
 
-/* ====== MULTI SELECT - MÜLKLER (YENİ EKLENDİ) ====== */
+/* ====== MULTI SELECT - MÜLKLER ====== */
 function togglePropSelectMode(){S.propSelectMode=!S.propSelectMode;S.selectedPropIds=[];render();}
 function togglePropSelect(id){
   S.selectedPropIds=S.selectedPropIds.includes(id)?S.selectedPropIds.filter(x=>x!==id):[...S.selectedPropIds,id];
@@ -527,7 +527,7 @@ function buildDashboard(){
     ${upcoming.length>0?`<div class="section-title">📅 Yaklaşan Randevular</div><div style="padding:0 16px">${upcoming.map(a=>{const c=cs.find(x=>x.id===a.contactId);const d=new Date(a.date+'T12:00:00');return `<div class="apt-card" onclick="go('appointments')"><div class="apt-date"><span class="apt-day">${d.getDate()}</span><span class="apt-month">${MONTHS_TR[d.getMonth()]}</span></div><div class="apt-info"><div class="apt-contact">${esc(c?c.name:'Bilinmiyor')}</div><div class="apt-time">⏰ ${esc(a.time||'')}${a.notes?' · '+esc(a.notes.slice(0,30)):''}</div></div></div>`;}).join('')}</div>`:''}
     <div class="section-title">⚡ Hızlı İşlemler</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px 16px">
-      ${[{icon:'👤',label:'Alıcı Ekle',fn:`openContactForm('buyer')`},{icon:'🏷️',label:'Satıcı Ekle',fn:`openContactForm('seller')`},{icon:'🏠',label:'Mülk Ekle',fn:`go('property-form',{editId:null})`},{icon:'🔗',label:'Eşleştir',fn:`go('matching')`}]
+      ${[{icon:'👤',label:'Alıcı Ekle',fn:`openContactForm('buyer')`},{icon:'🏷️',label:'Satıcı Ekle',fn:`openContactForm('seller')`},{icon:'🏠',label:'Mülk Ekle',fn:`go('property-form',{form:{status:'avail'},editId:null})`},{icon:'🔗',label:'Eşleştir',fn:`go('matching')`}]
       .map(b=>`<button onclick="${b.fn}" style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;align-items:center;gap:10px;font-size:14px;font-weight:600;cursor:pointer"><span style="font-size:22px">${b.icon}</span>${b.label}</button>`).join('')}
     </div>
   </div>`;
@@ -581,7 +581,10 @@ function buildContacts(){
   </div>`;
 }
 
-function openContactForm(type){S.params={form:{type:type||'buyer'},editId:null};go('contact-form');}
+// BUG FIX: Paremetreyi go objesine ekleyerek gönderdik
+function openContactForm(type){
+  go('contact-form', {form:{type:type||'buyer'},editId:null});
+}
 
 /* ====== CONTACT DETAIL ====== */
 function buildContactDetail(){
@@ -656,12 +659,14 @@ function delContact(id){
   S.data.contacts=S.data.contacts.filter(x=>x.id!==id);scheduleSave();toast('Silindi','success');back();
 }
 
+// BUG FIX: Paremetreyi go objesine ekleyerek gönderdik
 function editContact(id){
   const c=S.data.contacts.find(x=>x.id===id);if(!c)return;
-  S.params={form:{...c},editId:id};
-  go('contact-form');
+  go('contact-form', {form:{...c},editId:id});
 }
-function addAptFor(id){S.params={form:{contactId:id,date:today(),time:'10:00'},editId:null};go('appointment-form');}
+function addAptFor(id){
+  go('appointment-form', {form:{contactId:id,date:today(),time:'10:00'},editId:null});
+}
 function waOpen(num,msg){window.open(`https://wa.me/90${num}${msg?'?text='+encodeURIComponent(msg):''}`, '_blank');}
 
 /* ====== CONTACT FORM ====== */
@@ -776,7 +781,7 @@ function saveContact(){
   scheduleSave();S.params={};back();
 }
 
-/* ====== PROPERTIES ====== */
+/* ====== YENİ: PROPERTIES VE FİLTRELEME ====== */
 function buildProperties(){
   let props = S.data.properties || [];
   if(S.filter.propObj === 'portfolio') props = props.filter(p => p.isPortfolio);
@@ -816,9 +821,9 @@ function buildProperties(){
   </div>`;
 }
 
+// BUG FIX: Paremetreyi go objesine ekleyerek gönderdik
 function viewProperty(id){
-  S.params={id:id};
-  go('property-detail');
+  go('property-detail', {id:id});
 }
 
 /* ====== YENİ: PROPERTY DETAIL & ARAYANLAR HAVUZU ====== */
@@ -863,18 +868,18 @@ function buildPropertyDetail(){
   </div>`;
 }
 
+// BUG FIX: Paremetreyi go objesine ekleyerek gönderdik
 function editProperty(id){
   const p=S.data.properties.find(x=>x.id===id);
   if(!p)return;
-  S.params={form:{...p},editId:id};
-  go('property-form');
+  go('property-form', {form:{...p},editId:id});
 }
 
+// BUG FIX: Paremetreyi go objesine ekleyerek gönderdik
 function addLeadFor(id){
   const p=S.data.properties.find(x=>x.id===id);
   if(!p)return;
-  S.params={form:{type:'buyer',interestedIn:p.id,district:p.district||'',propType:p.propType||'',budget:p.price||''},editId:null};
-  go('contact-form');
+  go('contact-form', {form:{type:'buyer',interestedIn:p.id,district:p.district||'',propType:p.propType||'',budget:p.price||''},editId:null});
 }
 
 function buildPropertyForm(){
@@ -1055,7 +1060,7 @@ function buildAppointments(){
         </div>`;}).join('')}
       ${done.length>0?`<div style="font-size:13px;font-weight:600;color:var(--muted);padding:12px 0 8px;opacity:.7">Tamamlananlar</div>${done.map(a=>{const c=S.data.contacts.find(x=>x.id===a.contactId);const d=new Date(a.date+'T12:00:00');return `<div class="apt-card" style="opacity:.5"><div class="apt-date"><span class="apt-day">${d.getDate()}</span><span class="apt-month">${MONTHS_TR[d.getMonth()]}</span></div><div class="apt-info"><div class="apt-contact">${esc(c?c.name:'')}</div><div class="apt-time">⏰ ${esc(a.time||'')}</div></div></div>`;}).join('')}`:''}
     </div>
-    <button class="fab" onclick="go('appointment-form',{form:{date:'${today()}',time:'10:00'},editId:null})">+</button>
+    <button class="fab" onclick="addAptFor(null)">+</button>
   </div>`;
 }
 
