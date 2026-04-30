@@ -225,7 +225,7 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const uid=()=>Math.random().toString(36).slice(2)+Date.now().toString(36);
 const today=()=>new Date().toISOString().slice(0,10);
-const fmtDate=d=>{if(!d)return '-';const dt=new Date(d+'T12:00:00');return `${dt.getDate()} ${MONTHS_TR[dt.getMonth()]} ${dt.getFullYear()}`;};
+const fmtDate=d=>{if(!d)return '-';const dt=new Date(d+'T12:00:00');return `${dt.getDate()} ${MONTHS_TR[dt.getMonth()} ${dt.getFullYear()}`;};
 const initials=n=>(n||'?').split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
 const fmtPhone=p=>String(p||'').replace(/\D/g,'');
 const numFmt=n=>{if(!n)return '-';const v=parseFloat(String(n).replace(/[^0-9.]/g,''));if(isNaN(v))return n;if(v>=1000000)return (v/1000000).toFixed(2).replace(/\.?0+$/,'')+'M ₺';if(v>=1000)return Math.round(v/1000)+'K ₺';return v+'₺';};
@@ -356,12 +356,28 @@ function selectAllVisible(){
   S.selectedIds=ids.every(id=>S.selectedIds.includes(id))?[]:ids;
   render();
 }
+
 function bulkDelete(){
   if(!S.selectedIds.length)return;
   if(!confirm(`${S.selectedIds.length} kişi kalıcı olarak silinecek. Emin misiniz?`))return;
+
+  let propsToDelete = 0;
+  S.selectedIds.forEach(id => {
+    propsToDelete += S.data.properties.filter(p => p.ownerId === id).length;
+  });
+
+  if(propsToDelete > 0) {
+    if(confirm(`Seçilen kişilere ait toplam ${propsToDelete} adet mülk bulundu. Mülkleri de silelim mi?\n\n(Tamam = Mülkleri de sil, İptal = Mülkleri sahipsiz bırakarak sakla)`)) {
+      S.data.properties = S.data.properties.filter(p => !S.selectedIds.includes(p.ownerId));
+    } else {
+      S.data.properties.forEach(p => { if(S.selectedIds.includes(p.ownerId)) p.ownerId = ''; });
+    }
+  }
+
   S.data.contacts=S.data.contacts.filter(x=>!S.selectedIds.includes(x.id));
   S.selectedIds=[];S.selectMode=false;scheduleSave();toast('Silindi','success');render();
 }
+
 function bulkSetStatus(status){
   S.selectedIds.forEach(id=>{const c=S.data.contacts.find(x=>x.id===id);if(c)c.status=status;});
   S.showBulkSheet=false;S.selectedIds=[];S.selectMode=false;scheduleSave();toast('Durum güncellendi','success');render();
@@ -371,7 +387,7 @@ function bulkSetHeat(heat){
   S.showBulkSheet=false;S.selectedIds=[];S.selectMode=false;scheduleSave();toast('Sıcaklık güncellendi','success');render();
 }
 
-/* ====== RENDER - YAPI TAMAMEN DÜZELTİLDİ ====== */
+/* ====== RENDER ====== */
 function render(){
   const screens={
     login: buildLogin,
@@ -394,7 +410,6 @@ function render(){
   if(S.screen === 'loading') {
     content = `<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;color:var(--muted)">Yükleniyor...</div>`;
   } else {
-    // Sadece aktif olan ekranın fonksiyonunu çalıştır
     content = (screens[S.screen] || screens.dashboard)();
   }
 
@@ -577,10 +592,22 @@ function buildContactDetail(){
 
 function updateStatus(id,s){const c=S.data.contacts.find(x=>x.id===id);if(c){c.status=s;scheduleSave();render();}}
 function updateHeat(id,h){const c=S.data.contacts.find(x=>x.id===id);if(c){c.heat=h;scheduleSave();render();}}
+
 function delContact(id){
   if(!confirm('Bu kişiyi kalıcı olarak silmek istiyor musunuz?'))return;
+
+  const props = S.data.properties.filter(p => p.ownerId === id);
+  if(props.length > 0) {
+    if(confirm('Bu kişiye ait ' + props.length + ' adet mülk bulundu. Mülkleri de sistemden silelim mi?\n\n(Tamam = Mülkleri de sil, İptal = Mülkleri sahipsiz bırakarak sakla)')) {
+      S.data.properties = S.data.properties.filter(p => p.ownerId !== id);
+    } else {
+      S.data.properties.forEach(p => { if(p.ownerId === id) p.ownerId = ''; });
+    }
+  }
+
   S.data.contacts=S.data.contacts.filter(x=>x.id!==id);scheduleSave();toast('Silindi','success');back();
 }
+
 function editContact(id){
   const c=S.data.contacts.find(x=>x.id===id);if(!c)return;
   S.params={form:{...c},editId:id};
@@ -670,6 +697,16 @@ function buildContactForm(){
 
 function delContactFromForm(id){
   if(!confirm('Bu kişiyi kalıcı olarak silmek istiyor musunuz?'))return;
+
+  const props = S.data.properties.filter(p => p.ownerId === id);
+  if(props.length > 0) {
+    if(confirm('Bu kişiye ait ' + props.length + ' adet mülk bulundu. Mülkleri de sistemden silelim mi?\n\n(Tamam = Mülkleri de sil, İptal = Mülkleri sahipsiz bırakarak sakla)')) {
+      S.data.properties = S.data.properties.filter(p => p.ownerId !== id);
+    } else {
+      S.data.properties.forEach(p => { if(p.ownerId === id) p.ownerId = ''; });
+    }
+  }
+
   S.data.contacts=S.data.contacts.filter(x=>x.id!==id);
   scheduleSave();toast('Silindi','success');
   S.history.pop();
@@ -698,15 +735,15 @@ function buildProperties(){
       ${S.data.properties.length===0?`<div class="empty"><div class="empty-icon">🏘️</div><div class="empty-title">Mülk eklenmedi</div><div class="empty-sub">+ butonuyla ilk mülkü ekleyin</div></div>`
       :S.data.properties.map(p=>{
         const owner=S.data.contacts.find(x=>x.id===p.ownerId);
-        return `<div class="prop-card" onclick="editProperty('${p.id}')">
+        return `<div class="prop-card" onclick="editProperty('${p.id}')" style="${p.status==='sold'?'background:#f8fafc; border-color:#cbd5e1':''}">
           <div style="display:flex;justify-content:space-between;align-items:flex-start">
-            <div class="prop-title">${esc(p.title||p.propType||'Mülk')}</div>
+            <div class="prop-title" style="${p.status==='sold'?'text-decoration:line-through;color:var(--muted)':''}">${esc(p.title||p.propType||'Mülk')}</div>
             <span class="badge badge-${p.status||'avail'}">${{avail:'Satışta',reserved:'Rezerve',sold:'Satıldı'}[p.status||'avail']}</span>
           </div>
           <div class="prop-meta">${p.adNumber?`<span style="color:var(--blue);font-weight:600">İlan No: ${esc(p.adNumber)}</span><br>`:''}${[p.propType,p.district,p.rooms,p.sqm?p.sqm+'m²':''].filter(Boolean).join(' · ')}</div>
-          ${owner?`<div class="prop-meta" style="margin-top:2px">👤 ${esc(owner.name)}</div>`:''}
-          ${p.price?`<div class="prop-price">${numFmt(p.price)}</div>`:''}
-          ${p.link?`<div style="font-size:12px;color:var(--blue);margin-top:6px" onclick="event.stopPropagation();window.open('${esc(p.link)}','_blank')">🔗 İlana Git</div>`:''}
+          ${owner?`<div class="prop-meta" style="margin-top:8px; font-weight:700; color:var(--text); padding:4px 8px; background:${p.status==='sold'?'#e2e8f0':'var(--blue-light)'}; border-radius:6px; display:inline-block">👤 Sahibi: ${esc(owner.name)}</div>`:`<div class="prop-meta" style="margin-top:8px; font-style:italic; color:var(--muted)">Sahipsiz Mülk / Satıcı Silinmiş</div>`}
+          ${p.price?`<div class="prop-price" style="margin-top:8px; ${p.status==='sold'?'color:var(--muted)':''}">${numFmt(p.price)}</div>`:''}
+          ${p.link?`<div style="font-size:12px;color:var(--blue);margin-top:8px;display:inline-block;text-decoration:underline" onclick="event.stopPropagation();window.open('${esc(p.link)}','_blank')">🔗 İlana Git</div>`:''}
         </div>`;}).join('')}
     </div>
     <button class="fab" onclick="go('property-form',{form:{status:'avail'},editId:null})">+</button>
@@ -826,7 +863,7 @@ function buildTemplateForm(){
 function saveTpl(){
   const f=S.params.form||{};if(!f.name?.trim()||!f.text?.trim()){toast('Ad ve metin zorunludur','error');return;}
   if(S.params.editId)S.data.templates=S.data.templates.map(t=>t.id===S.params.editId?{...f,id:S.params.editId}:t);
-  else S.data.templates.push({...f,id:uid()});
+  else S.data.templates.push({...f,id:uid());
   scheduleSave();toast('Kaydedildi','success');S.params={tab:'templates'};back();
 }
 
