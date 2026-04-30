@@ -210,8 +210,8 @@ let S={
   filter:{type:'all',status:'all',propObj:'all'}, 
   search:'',selectMode:false,selectedIds:[],
   propSelectMode:false,selectedPropIds:[],
-  imgCache:{}, // 📸 YENİ: Resim Cache
-  sendTplId:null, sendTplSelected:[], // 💬 YENİ: Şablon Seçim Modalı İçin
+  imgCache:{}, 
+  sendTplId:null, sendTplSelected:[], waQueueMode:false, // 💬 YENİ: Spam korumalı gönderim için
   data:{
     contacts:[],properties:[],appointments:[],
     templates:[
@@ -237,21 +237,23 @@ const numFmt=n=>{if(!n)return '-';const v=parseFloat(String(n).replace(/[^0-9.]/
 
 function toast(msg,type='info'){S.toast={msg,type};render();setTimeout(()=>{S.toast=null;render();},3000);}
 
+/* 🛠️ YENİ HAFIZA (AMNAZİ) ÇÖZÜMÜ: Geçmişe ID ve parametreleri de yazıyoruz */
 function go(screen,params={}){
-  if(S.screen!=='loading')S.history.push(S.screen);
+  if(S.screen!=='loading')S.history.push({s:S.screen, p:JSON.parse(JSON.stringify(S.params))});
   S.screen=screen;
   S.params=params;
   S.selectMode=false;S.selectedIds=[];S.showBulkSheet=false;
   S.propSelectMode=false;S.selectedPropIds=[];S.showPropBulkSheet=false;
-  S.sendTplId=null; S.sendTplSelected=[];
+  S.sendTplId=null; S.sendTplSelected=[]; S.waQueueMode=false;
   render();window.scrollTo(0,0);
 }
 function back(){
-  S.screen=S.history.pop()||'dashboard';
-  S.params={};
+  const last = S.history.pop() || {s:'dashboard', p:{}};
+  S.screen=last.s;
+  S.params=last.p;
   S.selectMode=false;S.selectedIds=[];S.showBulkSheet=false;
   S.propSelectMode=false;S.selectedPropIds=[];S.showPropBulkSheet=false;
-  S.sendTplId=null; S.sendTplSelected=[];
+  S.sendTplId=null; S.sendTplSelected=[]; S.waQueueMode=false;
   render();window.scrollTo(0,0);
 }
 
@@ -534,7 +536,7 @@ function buildDashboard(){
     ${upcoming.length>0?`<div class="section-title">📅 Yaklaşan Randevular</div><div style="padding:0 16px">${upcoming.map(a=>{const c=cs.find(x=>x.id===a.contactId);const d=new Date(a.date+'T12:00:00');return `<div class="apt-card" onclick="go('appointments')"><div class="apt-date"><span class="apt-day">${d.getDate()}</span><span class="apt-month">${MONTHS_TR[d.getMonth()]}</span></div><div class="apt-info"><div class="apt-contact">${esc(c?c.name:'Bilinmiyor')}</div><div class="apt-time">⏰ ${esc(a.time||'')}${a.notes?' · '+esc(a.notes.slice(0,30)):''}</div></div></div>`;}).join('')}</div>`:''}
     <div class="section-title">⚡ Hızlı İşlemler</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px 16px">
-      ${[{icon:'👤',label:'Alıcı Ekle',fn:`openContactForm('buyer')`},{icon:'🏷️',label:'Satıcı Ekle',fn:`openContactForm('seller')`},{icon:'🏠',label:'Mülk Ekle',fn:`go('property-form',{editId:null})`},{icon:'🔗',label:'Eşleştir',fn:`go('matching')`}]
+      ${[{icon:'👤',label:'Alıcı Ekle',fn:`go('contact-form',{form:{type:'buyer'}}) `},{icon:'🏷️',label:'Satıcı Ekle',fn:`go('contact-form',{form:{type:'seller'}})`},{icon:'🏠',label:'Mülk Ekle',fn:`go('property-form',{editId:null})`},{icon:'🔗',label:'Eşleştir',fn:`go('matching')`}]
       .map(b=>`<button onclick="${b.fn}" style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;align-items:center;gap:10px;font-size:14px;font-weight:600;cursor:pointer"><span style="font-size:22px">${b.icon}</span>${b.label}</button>`).join('')}
     </div>
   </div>`;
@@ -584,12 +586,8 @@ function buildContacts(){
           </div>
         </div>`;}).join('')}</div>`}
     </div>
-    ${!S.selectMode?`<button class="fab" onclick="openContactForm('buyer')">+</button>`:''}
+    ${!S.selectMode?`<button class="fab" onclick="go('contact-form',{form:{type:'buyer'}})">+</button>`:''}
   </div>`;
-}
-
-function openContactForm(type){
-  go('contact-form', {form:{type:type||'buyer'},editId:null});
 }
 
 /* ====== CONTACT DETAIL ====== */
@@ -601,7 +599,7 @@ function buildContactDetail(){
   const intProp=c.interestedIn ? S.data.properties.find(p=>p.id===c.interestedIn) : null;
   const waNum=fmtPhone(c.phone);
 
-  return `<div class="content">${buildHeader(c.name,true,`<button class="header-action" onclick="editContact('${c.id}')">✏️</button>`)}
+  return `<div class="content">${buildHeader(c.name,true,`<button class="header-action" onclick="go('contact-form',{form:{...S.data.contacts.find(x=>x.id==='${c.id}')},editId:'${c.id}'})">✏️</button>`)}
     <div class="detail-hero">
       <div class="detail-hero-top"><div class="hero-avatar ${c.type==='buyer'?'av-buyer':'av-seller'}">${initials(c.name)}</div><div style="flex:1"><div class="detail-name">${esc(c.name)}</div><div class="detail-phone">${esc(c.phone||'')}</div></div></div>
       <div class="detail-badges">
@@ -613,7 +611,7 @@ function buildContactDetail(){
     <div class="detail-body">
       ${waNum?`<button class="wa-btn" onclick="waOpen('${waNum}','')"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.785 23.542l4.61-1.478A11.944 11.944 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818c-2.151 0-4.152-.64-5.824-1.74l-.418-.248-4.33 1.388 1.405-4.22-.272-.432A9.808 9.808 0 0 1 2.182 12c0-5.423 4.395-9.818 9.818-9.818 5.422 0 9.818 4.395 9.818 9.818 0 5.422-4.396 9.818-9.818 9.818z"/></svg>WhatsApp Aç</button>`:''}
       
-      ${intProp?`<div class="detail-section-card" style="border-color:var(--blue-mid)"><div class="detail-section-header" style="background:var(--blue-light);color:var(--blue)">İlgilendiği / Aradığı İlan</div><div class="contact-row" onclick="viewProperty('${intProp.id}')"><div class="avatar" style="background:var(--blue);color:#fff;font-size:18px">🏠</div><div class="contact-info"><div class="contact-name">${esc(intProp.title||intProp.propType||'Mülk')}</div><div class="contact-meta">${esc(intProp.district||'')} · ${numFmt(intProp.price)||'-'}</div></div></div></div>`:''}
+      ${intProp?`<div class="detail-section-card" style="border-color:var(--blue-mid)"><div class="detail-section-header" style="background:var(--blue-light);color:var(--blue)">İlgilendiği / Aradığı İlan</div><div class="contact-row" onclick="go('property-detail',{id:'${intProp.id}'})"><div class="avatar" style="background:var(--blue);color:#fff;font-size:18px">🏠</div><div class="contact-info"><div class="contact-name">${esc(intProp.title||intProp.propType||'Mülk')}</div><div class="contact-meta">${esc(intProp.district||'')} · ${numFmt(intProp.price)||'-'}</div></div></div></div>`:''}
 
       <div class="detail-section-card">
         <div class="detail-section-header">Kişisel Bilgiler</div>
@@ -641,8 +639,8 @@ function buildContactDetail(){
         </div>
       </div>
       <button class="wa-btn" style="background:var(--blue)" onclick="go('messages',{contactId:'${c.id}'})">💬 Şablonla Mesaj Gönder</button>
-      <button class="wa-btn" style="background:#fff;color:var(--text);border:1px solid var(--border)" onclick="addAptFor('${c.id}')">📅 Randevu Ekle</button>
-      <div class="detail-actions"><button class="btn-secondary" onclick="editContact('${c.id}')">✏️ Düzenle</button><button class="btn-secondary" style="color:var(--red)" onclick="delContact('${c.id}')">🗑️ Sil</button></div>
+      <button class="wa-btn" style="background:#fff;color:var(--text);border:1px solid var(--border)" onclick="go('appointment-form',{form:{contactId:'${c.id}',date:'${today()}',time:'10:00'},editId:null})">📅 Randevu Ekle</button>
+      <div class="detail-actions"><button class="btn-secondary" onclick="go('contact-form',{form:{...S.data.contacts.find(x=>x.id==='${c.id}')},editId:'${c.id}'})">✏️ Düzenle</button><button class="btn-secondary" style="color:var(--red)" onclick="delContact('${c.id}')">🗑️ Sil</button></div>
     </div>
   </div>`;
 }
@@ -652,26 +650,17 @@ function updateHeat(id,h){const c=S.data.contacts.find(x=>x.id===id);if(c){c.hea
 
 function delContact(id){
   if(!confirm('Bu kişiyi kalıcı olarak silmek istiyor musunuz?'))return;
-
   const props = S.data.properties.filter(p => p.ownerId === id);
   if(props.length > 0) {
-    if(confirm('Bu kişiye ait ' + props.length + ' adet mülk bulundu. Mülkleri de sistemden silelim mi?\n\n(Tamam = Mülkleri de sil, İptal = Mülkleri sahipsiz bırakarak sakla)')) {
+    if(confirm(`Bu kişiye ait ${props.length} adet mülk bulundu. Mülkleri de sistemden silelim mi?`)) {
       S.data.properties = S.data.properties.filter(p => p.ownerId !== id);
     } else {
       S.data.properties.forEach(p => { if(p.ownerId === id) p.ownerId = ''; });
     }
   }
-
   S.data.contacts=S.data.contacts.filter(x=>x.id!==id);scheduleSave();toast('Silindi','success');back();
 }
 
-function editContact(id){
-  const c=S.data.contacts.find(x=>x.id===id);if(!c)return;
-  go('contact-form', {form:{...c},editId:id});
-}
-function addAptFor(id){
-  go('appointment-form', {form:{contactId:id,date:today(),time:'10:00'},editId:null});
-}
 function waOpen(num,msg){window.open(`https://wa.me/90${num}${msg?'?text='+encodeURIComponent(msg):''}`, '_blank');}
 
 /* ====== CONTACT FORM ====== */
@@ -683,58 +672,27 @@ function buildContactForm(){
 
   return `<div class="form-screen">${buildHeader(isEdit?'Kişiyi Düzenle':'Yeni Kişi',true)}
     <div class="form-body">
-
       <div class="form-group"><label class="form-label">Müşteri Türü *</label>
         <div class="type-grid">
           <div class="type-opt ${t==='buyer'?'sel-buyer':''}" onclick="setF('type','buyer',true)">👤 Alıcı</div>
           <div class="type-opt ${t==='seller'?'sel-seller':''}" onclick="setF('type','seller',true)">🏷️ Satıcı</div>
         </div>
       </div>
-
-      <div class="form-group"><label class="form-label">Ad Soyad *</label>
-        <input class="form-input" type="text" placeholder="Ahmet Yılmaz" value="${esc(f.name||'')}" oninput="setF('name',this.value)">
-      </div>
-
-      <div class="form-group"><label class="form-label">Telefon *</label>
-        <input class="form-input" type="tel" placeholder="05XX XXX XX XX" value="${esc(f.phone||'')}" oninput="setF('phone',this.value)">
-      </div>
-
-      <div class="form-group"><label class="form-label">E-posta</label>
-        <input class="form-input" type="email" placeholder="ornek@mail.com" value="${esc(f.email||'')}" oninput="setF('email',this.value)">
-      </div>
-
-      <div class="form-group"><label class="form-label">${t==='seller'?'Satış Fiyatı (₺)':'Bütçe (₺)'}</label>
-        <input class="form-input" type="text" placeholder="2500000" value="${esc(f.budget||'')}" oninput="setF('budget',this.value)">
-      </div>
-
+      <div class="form-group"><label class="form-label">Ad Soyad *</label><input class="form-input" type="text" placeholder="Ahmet Yılmaz" value="${esc(f.name||'')}" oninput="setF('name',this.value)"></div>
+      <div class="form-group"><label class="form-label">Telefon *</label><input class="form-input" type="tel" placeholder="05XX XXX XX XX" value="${esc(f.phone||'')}" oninput="setF('phone',this.value)"></div>
+      <div class="form-group"><label class="form-label">E-posta</label><input class="form-input" type="email" placeholder="ornek@mail.com" value="${esc(f.email||'')}" oninput="setF('email',this.value)"></div>
+      <div class="form-group"><label class="form-label">${t==='seller'?'Satış Fiyatı (₺)':'Bütçe (₺)'}</label><input class="form-input" type="text" placeholder="2500000" value="${esc(f.budget||'')}" oninput="setF('budget',this.value)"></div>
       <div class="form-group"><label class="form-label">Mülk Türü</label>
-        <select class="form-input" onchange="setF('propType',this.value)">
-          <option value="">Seçiniz</option>
-          ${PROP_TYPES.map(p=>`<option value="${p}" ${f.propType===p?'selected':''}>${p}</option>`).join('')}
-        </select>
+        <select class="form-input" onchange="setF('propType',this.value)"><option value="">Seçiniz</option>${PROP_TYPES.map(p=>`<option value="${p}" ${f.propType===p?'selected':''}>${p}</option>`).join('')}</select>
       </div>
-
       <div class="row2">
-        <div class="form-group"><label class="form-label">Semt / İlçe</label>
-          <input class="form-input" type="text" placeholder="Karşıyaka" value="${esc(f.district||'')}" oninput="setF('district',this.value)">
-        </div>
-        <div class="form-group"><label class="form-label">Oda</label>
-          <select class="form-input" onchange="setF('rooms',this.value)">
-            <option value="">-</option>
-            ${ROOMS.map(r=>`<option value="${r}" ${f.rooms===r?'selected':''}>${r}</option>`).join('')}
-          </select>
-        </div>
+        <div class="form-group"><label class="form-label">Semt / İlçe</label><input class="form-input" type="text" placeholder="Karşıyaka" value="${esc(f.district||'')}" oninput="setF('district',this.value)"></div>
+        <div class="form-group"><label class="form-label">Oda</label><select class="form-input" onchange="setF('rooms',this.value)"><option value="">-</option>${ROOMS.map(r=>`<option value="${r}" ${f.rooms===r?'selected':''}>${r}</option>`).join('')}</select></div>
       </div>
-
       <div class="row2">
-        <div class="form-group"><label class="form-label">m²</label>
-          <input class="form-input" type="number" placeholder="90" value="${esc(f.sqm||'')}" oninput="setF('sqm',this.value)">
-        </div>
-        <div class="form-group"><label class="form-label">Komisyon (₺)</label>
-          <input class="form-input" type="text" placeholder="75000" value="${esc(f.commission||'')}" oninput="setF('commission',this.value)">
-        </div>
+        <div class="form-group"><label class="form-label">m²</label><input class="form-input" type="number" placeholder="90" value="${esc(f.sqm||'')}" oninput="setF('sqm',this.value)"></div>
+        <div class="form-group"><label class="form-label">Komisyon (₺)</label><input class="form-input" type="text" placeholder="75000" value="${esc(f.commission||'')}" oninput="setF('commission',this.value)"></div>
       </div>
-
       <div class="form-group"><label class="form-label">Müşteri Sıcaklığı</label>
         <div class="type-grid" style="grid-template-columns:1fr 1fr 1fr">
           <div class="type-opt ${heat==='hot'?'sel-hot':''}" onclick="setF('heat','hot',true)">🔴 Sıcak</div>
@@ -742,11 +700,7 @@ function buildContactForm(){
           <div class="type-opt ${heat==='cold'?'sel-cold':''}" onclick="setF('heat','cold',true)">🔵 Soğuk</div>
         </div>
       </div>
-
-      <div class="form-group"><label class="form-label">Notlar</label>
-        <textarea class="form-input" rows="3" placeholder="Özel istekler, notlar..." oninput="setF('notes',this.value)">${esc(f.notes||'')}</textarea>
-      </div>
-
+      <div class="form-group"><label class="form-label">Notlar</label><textarea class="form-input" rows="3" placeholder="Özel istekler, notlar..." oninput="setF('notes',this.value)">${esc(f.notes||'')}</textarea></div>
       <button class="btn-primary" onclick="saveContact()">${isEdit?'✅ Güncelle':'💾 Kaydet'}</button>
       ${isEdit?`<button class="btn-danger" onclick="delContactFromForm('${S.params.editId}')">🗑️ Bu Kişiyi Sil</button>`:''}
     </div>
@@ -755,16 +709,14 @@ function buildContactForm(){
 
 function delContactFromForm(id){
   if(!confirm('Bu kişiyi kalıcı olarak silmek istiyor musunuz?'))return;
-
   const props = S.data.properties.filter(p => p.ownerId === id);
   if(props.length > 0) {
-    if(confirm('Bu kişiye ait ' + props.length + ' adet mülk bulundu. Mülkleri de sistemden silelim mi?\n\n(Tamam = Mülkleri de sil, İptal = Mülkleri sahipsiz bırakarak sakla)')) {
+    if(confirm(`Bu kişiye ait ${props.length} adet mülk bulundu. Mülkleri de sistemden silelim mi?`)) {
       S.data.properties = S.data.properties.filter(p => p.ownerId !== id);
     } else {
       S.data.properties.forEach(p => { if(p.ownerId === id) p.ownerId = ''; });
     }
   }
-
   S.data.contacts=S.data.contacts.filter(x=>x.id!==id);
   scheduleSave();toast('Silindi','success');
   S.history.pop();
@@ -809,11 +761,10 @@ function buildProperties(){
       :props.map(p=>{
         const owner=S.data.contacts.find(x=>x.id===p.ownerId);
         const isSel=S.selectedPropIds.includes(p.id);
-        // YENİ: Gizli Portföy Rozeti
         const secretBadge = p.isSecret ? `<span style="color:#8b5cf6;font-weight:700">🤫 Gizli (El Altı) Portföy</span><br>` : '';
         const portBadge = p.isPortfolio ? `<span style="color:var(--amber);font-weight:700">🌟 Yetkili Portföy</span><br>` : '';
 
-        return `<div class="prop-card${isSel?' selected':''}" onclick="${S.propSelectMode?`togglePropSelect('${p.id}')`:`viewProperty('${p.id}')`}" style="${!isSel&&p.status==='sold'?'background:#f8fafc; border-color:#cbd5e1':''}">
+        return `<div class="prop-card${isSel?' selected':''}" onclick="${S.propSelectMode?`togglePropSelect('${p.id}')`:`go('property-detail',{id:'${p.id}'})`}" style="${!isSel&&p.status==='sold'?'background:#f8fafc; border-color:#cbd5e1':''}">
           <div style="display:flex;justify-content:space-between;align-items:flex-start">
             <div style="display:flex;align-items:flex-start;gap:10px">
               ${S.propSelectMode?`<div class="multi-checkbox${isSel?' checked':''}">${isSel?'<svg width="12" height="12" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg>':''}</div>`:''}
@@ -830,10 +781,6 @@ function buildProperties(){
   </div>`;
 }
 
-function viewProperty(id){
-  go('property-detail', {id:id});
-}
-
 /* ====== YENİ: FOTOĞRAF SIKIŞTIRMA VE YÜKLEME ====== */
 function compressImg(file) {
   return new Promise((resolve) => {
@@ -846,13 +793,13 @@ function compressImg(file) {
         const canvas = document.createElement('canvas');
         let width = img.width;
         let height = img.height;
-        const MAX = 1200; // 1200px genişlik WA için süper idealdir, kalite bozulmaz.
+        const MAX = 1200; 
         if(width > height && width > MAX) { height *= MAX / width; width = MAX; }
         else if(height > MAX) { width *= MAX / height; height = MAX; }
         canvas.width = width; canvas.height = height;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
-        canvas.toBlob(blob => resolve(blob), 'image/jpeg', 0.65); // %65 JPEG kalitesi (Hafıza dostu)
+        canvas.toBlob(blob => resolve(blob), 'image/jpeg', 0.65);
       }
     }
   });
@@ -952,17 +899,16 @@ function buildPropertyDetail(){
   const p=S.data.properties.find(x=>x.id===S.params.id);
   if(!p){ setTimeout(back, 0); return `<div style="padding:40px;text-align:center;color:var(--muted)">Mülk bulunamadı.</div>`; }
   
-  // Ekrana girildiğinde fotoğrafları arka planda çek (Drive'dan okumak için)
   setTimeout(()=>loadAllImagesForProp(p.id), 10);
 
   const owner=S.data.contacts.find(x=>x.id===p.ownerId);
   const leads=S.data.contacts.filter(x=>x.interestedIn===p.id);
 
   let bgClass = "var(--blue)";
-  if (p.isSecret) bgClass = "#8b5cf6"; // Gizli ise mor arka plan
-  else if (p.isPortfolio) bgClass = "linear-gradient(135deg, var(--blue), var(--blue-mid))"; // Yetkili ise degradeli
+  if (p.isSecret) bgClass = "#8b5cf6"; 
+  else if (p.isPortfolio) bgClass = "linear-gradient(135deg, var(--blue), var(--blue-mid))"; 
 
-  return `<div class="content">${buildHeader('Mülk Detayı',true,`<button class="header-action" onclick="editProperty('${p.id}')">✏️</button>`)}
+  return `<div class="content">${buildHeader('Mülk Detayı',true,`<button class="header-action" onclick="go('property-form',{form:{...S.data.properties.find(x=>x.id==='${p.id}')},editId:'${p.id}'})">✏️</button>`)}
     <div class="detail-hero" style="background:${bgClass}">
       <div style="font-size:28px;font-weight:800;margin-bottom:4px">${numFmt(p.price)||'-'}</div>
       <div style="font-size:16px;opacity:0.9">${esc(p.title||p.propType||'Mülk')}</div>
@@ -973,7 +919,7 @@ function buildPropertyDetail(){
     <div class="detail-body">
       ${p.link?`<button class="wa-btn" style="background:var(--blue)" onclick="window.open('${esc(p.link)}','_blank')">🔗 İlan Linkine Git</button>`:''}
       
-      <!-- YENİ: FOTOĞRAF GALERİSİ -->
+      <!-- FOTOĞRAF GALERİSİ -->
       <div class="detail-section-card" style="border-color:var(--border)">
         <div class="detail-section-header" style="display:flex;justify-content:space-between;align-items:center;background:#fff">
           <span style="font-size:13px;color:var(--text)">Mülk Fotoğrafları</span>
@@ -1012,22 +958,10 @@ function buildPropertyDetail(){
         <div class="detail-section-header" style="background:var(--blue-light);color:var(--blue)">Bu İlanla İlgilenenler (${leads.length})</div>
         ${leads.length===0?`<div style="padding:20px;text-align:center;font-size:13px;color:var(--muted)">Henüz ilgilenen bir alıcı eklenmemiş.</div>`
         :leads.map(l=>`<div class="contact-row" onclick="go('contact-detail',{id:'${l.id}'})"><div class="avatar av-buyer">${initials(l.name)}</div><div class="contact-info"><div class="contact-name">${esc(l.name)}</div><div class="contact-meta">${numFmt(l.budget)||'-'} · ${esc(l.phone||'')}</div></div><span class="badge badge-${l.heat||'warm'}">${{hot:'🔴',warm:'🟡',cold:'🔵'}[l.heat||'warm']}</span></div>`).join('')}
-        <button class="btn-secondary" style="width:100%;border:none;border-top:1px solid var(--border);border-radius:0 0 14px 14px;color:var(--blue);background:#fff" onclick="addLeadFor('${p.id}')">➕ İlgilenen / Arayan Ekle</button>
+        <button class="btn-secondary" style="width:100%;border:none;border-top:1px solid var(--border);border-radius:0 0 14px 14px;color:var(--blue);background:#fff" onclick="go('contact-form',{form:{type:'buyer',interestedIn:'${p.id}',district:'${esc(p.district||'')}',propType:'${esc(p.propType||'')}',budget:'${esc(p.price||'')}'},editId:null})">➕ İlgilenen / Arayan Ekle</button>
       </div>
     </div>
   </div>`;
-}
-
-function editProperty(id){
-  const p=S.data.properties.find(x=>x.id===id);
-  if(!p)return;
-  go('property-form', {form:{...p},editId:id});
-}
-
-function addLeadFor(id){
-  const p=S.data.properties.find(x=>x.id===id);
-  if(!p)return;
-  go('contact-form', {form:{type:'buyer',interestedIn:p.id,district:p.district||'',propType:p.propType||'',budget:p.price||''},editId:null});
 }
 
 function buildPropertyForm(){
@@ -1071,7 +1005,7 @@ function buildPropertyForm(){
       </div>
       <div class="form-group"><label class="form-label">Notlar</label><textarea class="form-input" rows="3" oninput="setF('notes',this.value)">${esc(f.notes||'')}</textarea></div>
       <button class="btn-primary" onclick="saveProperty()">${isEdit?'✅ Güncelle':'💾 Kaydet'}</button>
-      ${isEdit?`<button class="btn-danger" onclick="delProperty('${S.params.editId}')">🗑️ Mülkü Sil</button>`:''}
+      ${isEdit?`<button class="btn-danger" onclick="delPropertyFromForm('${S.params.editId}')">🗑️ Mülkü Sil</button>`:''}
     </div>
   </div>`;
 }
@@ -1089,7 +1023,8 @@ function saveProperty(){
   }
   scheduleSave();S.params={};back();
 }
-function delProperty(id){
+
+function delPropertyFromForm(id){
   if(!confirm('Bu mülkü kalıcı olarak silmek istiyor musunuz?'))return;
   S.data.contacts.forEach(c => { if(c.interestedIn === id) c.interestedIn = ''; });
   S.data.properties=S.data.properties.filter(x=>x.id!==id);
@@ -1098,7 +1033,7 @@ function delProperty(id){
   back();
 }
 
-/* ====== YENİ: MESAJLAR & KİŞİ SEÇTİRME (V4.3) ====== */
+/* ====== YENİ: MESAJLAR & KİŞİ SEÇTİRME (V4.4) ====== */
 function buildMessages(){
   if(S.sendTplId) return buildSendTplModal(); // Kime gönderilecek paneli
   
@@ -1115,59 +1050,56 @@ function buildMessages(){
 function buildTemplates(){
   return `<div style="padding:0 16px">
     <div class="info-row"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>{isim}, {telefon}, {semt} değişkenlerini kullanabilirsiniz.</div>
-    ${S.data.templates.map(t=>`<div class="template-card"><div class="template-name">${esc(t.name)}</div><div class="template-text">${esc(t.text)}</div><div class="template-actions"><button class="btn-small btn-small-green" onclick="openSendModal('${t.id}')">📤 Seçerek Gönder</button><button class="btn-small btn-small-blue" onclick="editTpl('${t.id}')">✏️ Düzenle</button><button class="btn-small btn-small-red" onclick="delTpl('${t.id}')">Sil</button></div></div>`).join('')}
+    ${S.data.templates.map(t=>`<div class="template-card"><div class="template-name">${esc(t.name)}</div><div class="template-text">${esc(t.text)}</div><div class="template-actions"><button class="btn-small btn-small-green" onclick="S.sendTplId='${t.id}';S.sendTplSelected=[];S.waQueueMode=false;render()">📤 Seçerek Gönder</button><button class="btn-small btn-small-blue" onclick="go('template-form',{form:{...S.data.templates.find(x=>x.id==='${t.id}')},editId:'${t.id}'})">✏️ Düzenle</button><button class="btn-small btn-small-red" onclick="delTpl('${t.id}')">Sil</button></div></div>`).join('')}
     <button class="btn-primary" style="margin-top:4px" onclick="go('template-form',{form:{},editId:null})">+ Yeni Şablon</button>
   </div>`;
 }
 
-/* Şablon Gönderim Paneli Mantığı */
-function openSendModal(id){
-  S.sendTplId = id; S.sendTplSelected = []; render();
-}
-function closeSendModal(){
-  S.sendTplId = null; S.sendTplSelected = []; render();
-}
-function toggleAllTplContacts(checked){
-  S.sendTplSelected = checked ? S.data.contacts.filter(c=>c.phone).map(c=>c.id) : [];
-  render();
-}
-function toggleTplContact(id, checked) {
-  S.sendTplSelected = checked ? [...S.sendTplSelected, id] : S.sendTplSelected.filter(x=>x!==id);
-  render();
-}
-function confirmSendTpl(){
-  if(S.sendTplSelected.length===0) { toast('Kimseyi seçmediniz!', 'error'); return; }
-  const tpl = S.data.templates.find(t=>t.id===S.sendTplId);
-  if(!confirm(`Şablon mesajınız ${S.sendTplSelected.length} kişiye sırayla gönderilecek. Devam?`)) return;
-  
-  const cs = S.data.contacts.filter(c=>S.sendTplSelected.includes(c.id));
-  cs.forEach((c,i)=>setTimeout(()=>{
-    const msg = tpl.text.replace(/{isim}/g,c.name).replace(/{telefon}/g,c.phone||'').replace(/{semt}/g,c.district||'');
-    waOpen(fmtPhone(c.phone),msg);
-  }, i*800)); // WA yasaklamasın diye 800ms bekleyerek açar
-  
-  closeSendModal();
-}
-
+/* 🚀 YENİ: SPAM KORUMALI MANUEL GÖNDERİM LİSTESİ */
 function buildSendTplModal(){
   const tpl = S.data.templates.find(t=>t.id===S.sendTplId);
   const contacts = S.data.contacts.filter(c=>c.phone);
-  const allSel = contacts.length > 0 && S.sendTplSelected.length === contacts.length;
   
-  return `<div class="content">${buildHeader('Kime Gönderilecek?', true, `<button class="header-action" onclick="closeSendModal()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>`)}
+  // EĞER GÖNDERİM MODUNDAYSAK (Tarayıcı engeline takılmayan liste)
+  if(S.waQueueMode) {
+     const cs = S.data.contacts.filter(c=>S.sendTplSelected.includes(c.id));
+     return `<div class="content">${buildHeader('Gönderim Listesi', false, `<button class="header-action" onclick="S.sendTplId=null;S.waQueueMode=false;render()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>`)}
+     <div style="padding:16px">
+       <div style="font-size:13px;color:var(--muted);margin-bottom:14px">iPhone ve Tarayıcı engeline takılmamak için gönder butonlarına tek tek basınız.</div>
+       <div style="border:1px solid var(--border);border-radius:12px;background:#fff;margin-bottom:14px;overflow:hidden">
+         ${cs.map(c=>{
+           const msg = tpl.text.replace(/{isim}/g,c.name).replace(/{telefon}/g,c.phone||'').replace(/{semt}/g,c.district||'');
+           return `<div class="contact-row" style="padding:14px;border-bottom:1px solid var(--border)">
+             <div class="contact-info">
+               <div class="contact-name">${esc(c.name)}</div>
+               <div class="contact-meta">${esc(c.phone)}</div>
+             </div>
+             <button class="btn-small btn-small-green" style="display:flex;align-items:center;gap:4px;background:#EAF3DE;color:#3B6D11;border:none;font-weight:700" onclick="waOpen('${fmtPhone(c.phone)}','${msg}'); this.style.opacity='0.4'; this.innerHTML='✅ İletildi'">
+               ${WA_SVG} Gönder
+             </button>
+           </div>`;
+         }).join('')}
+       </div>
+       <button class="btn-secondary" style="width:100%" onclick="S.sendTplId=null;S.waQueueMode=false;render()">Bitir ve Kapat</button>
+     </div></div>`;
+  }
+
+  // SEÇİM MODUNDAYSAK
+  const allSel = contacts.length > 0 && S.sendTplSelected.length === contacts.length;
+  return `<div class="content">${buildHeader('Kime Gönderilecek?', true, `<button class="header-action" onclick="S.sendTplId=null;render()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>`)}
     <div style="padding:16px">
        <div style="background:var(--blue-light);color:var(--blue);padding:12px;border-radius:10px;margin-bottom:14px;font-size:14px"><b>Şablon:</b> ${esc(tpl.name)}</div>
        <div style="max-height:60vh;overflow-y:auto;border:1px solid var(--border);border-radius:12px;background:#fff;margin-bottom:14px">
          <label style="display:flex;align-items:center;gap:12px;padding:14px;border-bottom:2px solid var(--border);cursor:pointer;font-weight:700;background:#f8fafc">
-            <input type="checkbox" onchange="toggleAllTplContacts(this.checked)" style="width:20px;height:20px;accent-color:var(--blue)" ${allSel?'checked':''}> TÜMÜNÜ SEÇ
+            <input type="checkbox" onchange="S.sendTplSelected = this.checked ? S.data.contacts.filter(c=>c.phone).map(c=>c.id) : []; render();" style="width:20px;height:20px;accent-color:var(--blue)" ${allSel?'checked':''}> TÜMÜNÜ SEÇ
          </label>
          ${contacts.length===0?`<div style="padding:16px;text-align:center;color:var(--muted)">Telefon numarası kayıtlı kimse yok.</div>`:''}
          ${contacts.map(c=>`<label style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer">
-            <input type="checkbox" ${S.sendTplSelected.includes(c.id)?'checked':''} onchange="toggleTplContact('${c.id}',this.checked)" style="width:18px;height:18px;accent-color:var(--blue)">
+            <input type="checkbox" ${S.sendTplSelected.includes(c.id)?'checked':''} onchange="S.sendTplSelected=this.checked?[...S.sendTplSelected,'${c.id}']:S.sendTplSelected.filter(x=>x!=='${c.id}');render()" style="width:18px;height:18px;accent-color:var(--blue)">
             <div style="flex:1"><div style="font-size:15px;font-weight:600">${esc(c.name)}</div><div style="font-size:12px;color:var(--muted)">${esc(c.phone)} · ${esc(c.district||'')}</div></div>
          </label>`).join('')}
        </div>
-       <button class="btn-primary" style="background:#25D366;font-size:16px;display:flex;align-items:center;justify-content:center;gap:8px" onclick="confirmSendTpl()">${WA_SVG} Seçilenlere Gönder (${S.sendTplSelected.length})</button>
+       <button class="btn-primary" style="background:#25D366;font-size:16px;display:flex;align-items:center;justify-content:center;gap:8px" onclick="if(S.sendTplSelected.length===0){toast('Kimseyi seçmediniz!', 'error');return;} S.waQueueMode=true; render();">${WA_SVG} Devam Et (${S.sendTplSelected.length})</button>
     </div>
   </div>`;
 }
@@ -1183,7 +1115,6 @@ function buildScheduled(){
   </div>`;
 }
 
-function editTpl(id){const t=S.data.templates.find(x=>x.id===id);if(t)go('template-form',{form:{...t},editId:id});}
 function delTpl(id){if(!confirm('Şablonu sil?'))return;S.data.templates=S.data.templates.filter(x=>x.id!==id);scheduleSave();render();}
 function delSched(id){if(!confirm('İptal et?'))return;S.data.scheduled=S.data.scheduled.filter(x=>x.id!==id);scheduleSave();render();}
 
@@ -1222,13 +1153,12 @@ function buildScheduleForm(){
           <div class="type-opt ${selAll?'sel-buyer':''}" onclick="setF('recipientIds','all',true)">👥 Herkese</div>
           <div class="type-opt ${!selAll?'sel-seller':''}" onclick="setF('recipientIds',[],true)">✅ Seçtiklerime</div>
         </div>
-        ${!selAll?`<div style="max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:10px">${contacts.map(c=>`<label style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border);cursor:pointer"><input type="checkbox" ${(Array.isArray(f.recipientIds)&&f.recipientIds.includes(c.id))?'checked':''} onchange="toggleRcp('${c.id}',this.checked)"><span style="font-size:14px">${esc(c.name)}</span></label>`).join('')}</div>`:''}
+        ${!selAll?`<div style="max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:10px">${contacts.map(c=>`<label style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border);cursor:pointer"><input type="checkbox" ${(Array.isArray(f.recipientIds)&&f.recipientIds.includes(c.id))?'checked':''} onchange="let r=S.params.form.recipientIds||[]; setF('recipientIds',this.checked?[...r,'${c.id}']:r.filter(x=>x!=='${c.id}'))"><span style="font-size:14px">${esc(c.name)}</span></label>`).join('')}</div>`:''}
       </div>
       <button class="btn-primary" onclick="saveSched()">⏰ Zamanla</button>
     </div>
   </div>`;
 }
-function toggleRcp(id,checked){let r=S.params.form?.recipientIds;if(!Array.isArray(r))r=[];r=checked?[...r,id]:r.filter(x=>x!==id);setF('recipientIds',r);}
 function saveSched(){
   const f=S.params.form||{};
   if(!f.name?.trim()){toast('Mesaj adı zorunludur','error');return;}
@@ -1312,7 +1242,6 @@ function buildMatching(){
   buyers.forEach(b=>{
     props.forEach(p=>{
       let score=0;let tags=[];
-
       if(b.district&&p.district&&b.district.trim().toLowerCase()===p.district.trim().toLowerCase()){score+=40;tags.push('📍 Semt');}
       if(b.propType&&p.propType&&b.propType===p.propType){score+=30;tags.push('🏠 Tür');}
       if(b.budget&&p.price){
@@ -1323,7 +1252,6 @@ function buildMatching(){
         }
       }
       if(b.rooms&&p.rooms&&b.rooms===p.rooms){score+=10;tags.push('🚪 Oda');}
-
       if(score>=50&&tags.length>=2)matches.push({buyer:b,prop:p,owner:sellers.find(x=>x.id===p.ownerId),score,tags});
     });
   });
