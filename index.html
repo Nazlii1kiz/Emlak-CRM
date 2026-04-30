@@ -371,29 +371,37 @@ function bulkSetHeat(heat){
   S.showBulkSheet=false;S.selectedIds=[];S.selectMode=false;scheduleSave();toast('Sıcaklık güncellendi','success');render();
 }
 
-/* ====== RENDER ====== */
+/* ====== RENDER - YAPI TAMAMEN DÜZELTİLDİ ====== */
 function render(){
   const screens={
-    loading:`<div style="display:flex;align-items:center;justify-content:center;min-height:100vh">Yükleniyor...</div>`,
-    login:buildLogin(),
-    dashboard:buildDashboard(),
-    contacts:buildContacts(),
-    'contact-detail':buildContactDetail(),
-    'contact-form':buildContactForm(),
-    properties:buildProperties(),
-    'property-form':buildPropertyForm(),
-    messages:buildMessages(),
-    'template-form':buildTemplateForm(),
-    'schedule-form':buildScheduleForm(),
-    appointments:buildAppointments(),
-    'appointment-form':buildAptForm(),
-    matching:buildMatching(),
-    pipeline:buildPipeline(),
+    login: buildLogin,
+    dashboard: buildDashboard,
+    contacts: buildContacts,
+    'contact-detail': buildContactDetail,
+    'contact-form': buildContactForm,
+    properties: buildProperties,
+    'property-form': buildPropertyForm,
+    messages: buildMessages,
+    'template-form': buildTemplateForm,
+    'schedule-form': buildScheduleForm,
+    appointments: buildAppointments,
+    'appointment-form': buildAptForm,
+    matching: buildMatching,
+    pipeline: buildPipeline
   };
+
+  let content = '';
+  if(S.screen === 'loading') {
+    content = `<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;color:var(--muted)">Yükleniyor...</div>`;
+  } else {
+    // Sadece aktif olan ekranın fonksiyonunu çalıştır
+    content = (screens[S.screen] || screens.dashboard)();
+  }
+
   $('app').innerHTML=`<div class="app">
     <div id="savingBar" class="saving-bar" style="display:${S.saving?'block':'none'}"></div>
     ${S.toast?`<div class="toast toast-${S.toast.type}">${esc(S.toast.msg)}</div>`:''}
-    ${screens[S.screen]||screens.dashboard}
+    ${content}
     ${S.screen!=='login'&&S.screen!=='loading'?buildNav():''}
     ${S.showUserMenu?buildUserMenu():''}
     ${S.showBulkSheet?buildBulkSheet():''}
@@ -520,7 +528,8 @@ function openContactForm(type){S.params={form:{type:type||'buyer'},editId:null};
 /* ====== CONTACT DETAIL ====== */
 function buildContactDetail(){
   const c=S.data.contacts.find(x=>x.id===S.params.id);
-  if(!c){back();return '';}
+  if(!c){ setTimeout(back, 0); return `<div style="padding:40px;text-align:center;color:var(--muted)">Kişi bulunamadı.</div>`; }
+  
   const apts=S.data.appointments.filter(a=>a.contactId===c.id&&!a.done);
   const waNum=fmtPhone(c.phone);
   return `<div class="content">${buildHeader(c.name,true,`<button class="header-action" onclick="editContact('${c.id}')">✏️</button>`)}
@@ -574,7 +583,6 @@ function delContact(id){
 }
 function editContact(id){
   const c=S.data.contacts.find(x=>x.id===id);if(!c)return;
-  // Tam deep copy — düzenleme için kritik
   S.params={form:{...c},editId:id};
   go('contact-form');
 }
@@ -932,34 +940,18 @@ function buildMatching(){
       let score=0;
       let tags=[];
 
-      // 1. Semt Puanı (%40)
-      if(b.district && p.district && b.district.trim().toLowerCase() === p.district.trim().toLowerCase()){
-        score += 40; tags.push('📍 Semt');
-      }
-      // 2. Tür Puanı (%30)
-      if(b.propType && p.propType && b.propType === p.propType){
-        score += 30; tags.push('🏠 Tür');
-      }
-      // 3. Bütçe Puanı (%20) - %15 pazarlık/esneklik payı
+      if(b.district && p.district && b.district.trim().toLowerCase() === p.district.trim().toLowerCase()){score += 40; tags.push('📍 Semt');}
+      if(b.propType && p.propType && b.propType === p.propType){score += 30; tags.push('🏠 Tür');}
       if(b.budget && p.price){
         const bd=parseFloat(b.budget), pd=parseFloat(p.price);
-        if(!isNaN(bd) && !isNaN(pd) && pd <= (bd * 1.15)){
-          score += 20; tags.push('💰 Bütçe');
-        }
+        if(!isNaN(bd) && !isNaN(pd) && pd <= (bd * 1.15)){score += 20; tags.push('💰 Bütçe');}
       }
-      // 4. Oda Puanı (%10)
-      if(b.rooms && p.rooms && b.rooms === p.rooms){
-        score += 10; tags.push('🚪 Oda');
-      }
+      if(b.rooms && p.rooms && b.rooms === p.rooms){score += 10; tags.push('🚪 Oda');}
 
-      // Sadece %50 ve üzeri uyanları listeye al
-      if(score >= 50) {
-        matches.push({buyer:b, prop:p, owner:sellers.find(x=>x.id===p.ownerId), score: score, tags: tags});
-      }
+      if(score >= 50) matches.push({buyer:b, prop:p, owner:sellers.find(x=>x.id===p.ownerId), score: score, tags: tags});
     });
   });
 
-  // En yüksek uyum sağlayanları en üste al
   matches.sort((a,b) => b.score - a.score);
 
   return `<div class="content">${buildHeader('Akıllı Eşleştirme',true)}
@@ -968,7 +960,6 @@ function buildMatching(){
       :matches.map(m=>{
         let color = 'var(--green)';
         if(m.score <= 60) color = 'var(--amber)';
-        
         return `<div class="match-card">
           <div class="match-header" style="align-items:center; border-bottom:1px solid var(--border); padding-bottom:10px; margin-bottom:10px;">
             <div style="font-size:24px; font-weight:800; color:${color}">%${m.score}</div>
