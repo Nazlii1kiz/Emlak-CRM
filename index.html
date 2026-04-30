@@ -67,8 +67,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .contact-name{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .contact-meta{font-size:13px;color:var(--muted);margin-top:2px}
 /* MULTI SELECT */
-.contact-checkbox{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;background:#fff;transition:all .15s}
-.contact-checkbox.checked{background:var(--blue);border-color:var(--blue)}
+.multi-checkbox{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;background:#fff;transition:all .15s}
+.multi-checkbox.checked{background:var(--blue);border-color:var(--blue)}
 .select-bar{position:fixed;bottom:64px;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#1a2332;color:#fff;padding:12px 16px;display:flex;align-items:center;gap:8px;z-index:101}
 .select-bar-info{flex:1;font-size:14px;font-weight:600}
 .sel-action-btn{padding:8px 12px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;border:none;white-space:nowrap}
@@ -165,7 +165,8 @@ select.form-input{appearance:none;background-image:url("data:image/svg+xml,%3Csv
 .match-card{background:var(--card);border-radius:14px;border:1px solid var(--border);padding:14px;margin-bottom:10px}
 .match-header{display:flex;justify-content:space-between;margin-bottom:10px}
 /* PROPERTY */
-.prop-card{background:var(--card);border-radius:14px;border:1px solid var(--border);padding:14px;margin-bottom:10px;cursor:pointer}
+.prop-card{background:var(--card);border-radius:14px;border:1px solid var(--border);padding:14px;margin-bottom:10px;cursor:pointer;transition:all .15s}
+.prop-card.selected{background:#EEF5FC; border-color:var(--blue)}
 .prop-title{font-size:16px;font-weight:700;margin-bottom:4px}
 .prop-meta{font-size:13px;color:var(--muted)}
 .prop-price{font-size:18px;font-weight:700;color:var(--blue);margin-top:6px}
@@ -203,9 +204,10 @@ const ROOMS=['1+0','1+1','2+1','3+1','3+2','4+1','4+2','5+1','5+2','6+'];
 let S={
   token:null,user:null,fileId:null,saving:false,
   screen:'loading',params:{},history:[],toast:null,
-  showUserMenu:false,showBulkSheet:false,
-  filter:{type:'all',status:'all',propObj:'all'}, // YENİ: propObj (all/portfolio) eklendi
+  showUserMenu:false,showBulkSheet:false,showPropBulkSheet:false,
+  filter:{type:'all',status:'all',propObj:'all'},
   search:'',selectMode:false,selectedIds:[],
+  propSelectMode:false,selectedPropIds:[],
   data:{
     contacts:[],properties:[],appointments:[],
     templates:[
@@ -236,11 +238,13 @@ function go(screen,params={}){
   if(S.screen!=='loading')S.history.push(S.screen);
   S.screen=screen;S.params=params;
   S.selectMode=false;S.selectedIds=[];S.showBulkSheet=false;
+  S.propSelectMode=false;S.selectedPropIds=[];S.showPropBulkSheet=false;
   render();window.scrollTo(0,0);
 }
 function back(){
   S.screen=S.history.pop()||'dashboard';S.params={};
   S.selectMode=false;S.selectedIds=[];S.showBulkSheet=false;
+  S.propSelectMode=false;S.selectedPropIds=[];S.showPropBulkSheet=false;
   render();window.scrollTo(0,0);
 }
 
@@ -345,7 +349,7 @@ function checkAll(){
 }
 function notify(title,body){if('Notification'in window&&Notification.permission==='granted')new Notification(title,{body});}
 
-/* ====== MULTI SELECT ====== */
+/* ====== MULTI SELECT - KİŞİLER ====== */
 function toggleSelectMode(){S.selectMode=!S.selectMode;S.selectedIds=[];render();}
 function toggleSelect(id){
   S.selectedIds=S.selectedIds.includes(id)?S.selectedIds.filter(x=>x!==id):[...S.selectedIds,id];
@@ -361,9 +365,7 @@ function bulkDelete(){
   if(!confirm(`${S.selectedIds.length} kişi kalıcı olarak silinecek. Emin misiniz?`))return;
 
   let propsToDelete = 0;
-  S.selectedIds.forEach(id => {
-    propsToDelete += S.data.properties.filter(p => p.ownerId === id).length;
-  });
+  S.selectedIds.forEach(id => { propsToDelete += S.data.properties.filter(p => p.ownerId === id).length; });
 
   if(propsToDelete > 0) {
     if(confirm(`Seçilen kişilere ait toplam ${propsToDelete} adet mülk bulundu. Mülkleri de silelim mi?\n\n(Tamam = Mülkleri de sil, İptal = Mülkleri sahipsiz bırakarak sakla)`)) {
@@ -385,7 +387,34 @@ function bulkSetHeat(heat){
   S.showBulkSheet=false;S.selectedIds=[];S.selectMode=false;scheduleSave();toast('Sıcaklık güncellendi','success');render();
 }
 
-/* ====== RENDER - ÇİFT FONKSİYON HATASI DÜZELTİLDİ ====== */
+/* ====== MULTI SELECT - MÜLKLER (YENİ EKLENDİ) ====== */
+function togglePropSelectMode(){S.propSelectMode=!S.propSelectMode;S.selectedPropIds=[];render();}
+function togglePropSelect(id){
+  S.selectedPropIds=S.selectedPropIds.includes(id)?S.selectedPropIds.filter(x=>x!==id):[...S.selectedPropIds,id];
+  render();
+}
+function selectAllPropsVisible(){
+  let props = S.data.properties || [];
+  if(S.filter.propObj === 'portfolio') props = props.filter(p => p.isPortfolio);
+  const ids=props.map(p=>p.id);
+  S.selectedPropIds=ids.every(id=>S.selectedPropIds.includes(id))?[]:ids;
+  render();
+}
+function propBulkDelete(){
+  if(!S.selectedPropIds.length)return;
+  if(!confirm(`${S.selectedPropIds.length} mülk kalıcı olarak silinecek. Emin misiniz?`))return;
+  
+  S.data.contacts.forEach(c => { if(S.selectedPropIds.includes(c.interestedIn)) c.interestedIn = ''; });
+  S.data.properties=S.data.properties.filter(x=>!S.selectedPropIds.includes(x.id));
+  
+  S.selectedPropIds=[];S.propSelectMode=false;scheduleSave();toast('Mülkler silindi','success');render();
+}
+function propBulkSetStatus(status){
+  S.selectedPropIds.forEach(id=>{const p=S.data.properties.find(x=>x.id===id);if(p)p.status=status;});
+  S.showPropBulkSheet=false;S.selectedPropIds=[];S.propSelectMode=false;scheduleSave();toast('Durum güncellendi','success');render();
+}
+
+/* ====== RENDER ====== */
 function render(){
   const screens={
     login: buildLogin,
@@ -394,7 +423,7 @@ function render(){
     'contact-detail': buildContactDetail,
     'contact-form': buildContactForm,
     properties: buildProperties,
-    'property-detail': buildPropertyDetail, // YENİ EKLENDİ
+    'property-detail': buildPropertyDetail,
     'property-form': buildPropertyForm,
     messages: buildMessages,
     'template-form': buildTemplateForm,
@@ -409,7 +438,6 @@ function render(){
   if(S.screen === 'loading') {
     content = `<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;color:var(--muted)">Yükleniyor...</div>`;
   } else {
-    // Sadece aktif olan ekranın fonksiyonunu çalıştır
     content = (screens[S.screen] || screens.dashboard)();
   }
 
@@ -420,14 +448,16 @@ function render(){
     ${S.screen!=='login'&&S.screen!=='loading'?buildNav():''}
     ${S.showUserMenu?buildUserMenu():''}
     ${S.showBulkSheet?buildBulkSheet():''}
+    ${S.showPropBulkSheet?buildPropBulkSheet():''}
     ${S.selectMode&&S.selectedIds.length>0?buildSelectBar():''}
+    ${S.propSelectMode&&S.selectedPropIds.length>0?buildPropSelectBar():''}
   </div>`;
 }
 
 function buildNav(){
   const tabs=[{id:'dashboard',icon:'🏠',label:'Ana Sayfa'},{id:'contacts',icon:'👥',label:'Kişiler'},{id:'properties',icon:'🏘️',label:'Mülkler'},{id:'messages',icon:'💬',label:'Mesajlar'},{id:'appointments',icon:'📅',label:'Takvim'}];
   const inContact=['contact-form','contact-detail'];
-  const inProp=['property-form','property-detail']; // YENİ EKLENDİ
+  const inProp=['property-form','property-detail'];
   return `<nav class="bottom-nav">${tabs.map(t=>`<button class="nav-item ${S.screen===t.id||(inContact.includes(S.screen)&&t.id==='contacts')||(inProp.includes(S.screen)&&t.id==='properties')?'active':''}" onclick="go('${t.id}')"><span class="nav-icon">${t.icon}</span><span>${t.label}</span></button>`).join('')}</nav>`;
 }
 
@@ -440,17 +470,29 @@ function buildUserMenu(){
   return `<div class="overlay" onclick="S.showUserMenu=false;render()"><div class="bottom-sheet" onclick="event.stopPropagation()"><div class="sheet-handle"></div><div style="display:flex;align-items:center;gap:14px;margin-bottom:20px"><div class="avatar av-buyer" style="width:52px;height:52px;font-size:18px">${S.user?.picture?`<img src="${esc(S.user.picture)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`:initials(S.user?.name)}</div><div><div style="font-size:17px;font-weight:700">${esc(S.user?.name||'')}</div><div style="font-size:13px;color:var(--muted)">${esc(S.user?.email||'')}</div></div></div><div style="font-size:13px;color:var(--muted);margin-bottom:16px">Verileriniz Google Drive'ınızda güvenle saklanmaktadır.</div><button class="btn-danger" onclick="signOut()">Çıkış Yap</button></div></div>`;
 }
 
+/* Seçim Barları */
 function buildSelectBar(){
   const n=S.selectedIds.length;
   return `<div class="select-bar"><span class="select-bar-info">${n} kişi seçildi</span><button class="sel-action-btn sel-btn-gray" onclick="S.showBulkSheet=true;render()">Durum/Sıcaklık</button><button class="sel-action-btn sel-btn-red" onclick="bulkDelete()">🗑️ Sil</button></div>`;
 }
+function buildPropSelectBar(){
+  const n=S.selectedPropIds.length;
+  return `<div class="select-bar"><span class="select-bar-info">${n} mülk seçildi</span><button class="sel-action-btn sel-btn-gray" onclick="S.showPropBulkSheet=true;render()">Durum</button><button class="sel-action-btn sel-btn-red" onclick="propBulkDelete()">🗑️ Sil</button></div>`;
+}
 
+/* Çoklu İşlem Menüleri */
 function buildBulkSheet(){
   return `<div class="overlay" onclick="S.showBulkSheet=false;render()"><div class="bottom-sheet" onclick="event.stopPropagation()"><div class="sheet-handle"></div><div style="font-size:16px;font-weight:700;margin-bottom:16px">${S.selectedIds.length} kişi için güncelle</div>
     <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:6px">Durum değiştir</div>
     ${Object.entries(STATUS_LABELS).map(([k,v])=>`<div class="status-option" onclick="bulkSetStatus('${k}')"><span class="badge badge-${k}">${v}</span></div>`).join('')}
     <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;margin:14px 0 6px">Sıcaklık değiştir</div>
     ${[['hot','🔴 Sıcak'],['warm','🟡 Ilık'],['cold','🔵 Soğuk']].map(([k,v])=>`<div class="status-option" onclick="bulkSetHeat('${k}')">${v}</div>`).join('')}
+  </div></div>`;
+}
+function buildPropBulkSheet(){
+  return `<div class="overlay" onclick="S.showPropBulkSheet=false;render()"><div class="bottom-sheet" onclick="event.stopPropagation()"><div class="sheet-handle"></div><div style="font-size:16px;font-weight:700;margin-bottom:16px">${S.selectedPropIds.length} mülk için güncelle</div>
+    <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:6px">Durum değiştir</div>
+    ${Object.entries({avail:'Satışta',reserved:'Rezerve',sold:'Satıldı'}).map(([k,v])=>`<div class="status-option" onclick="propBulkSetStatus('${k}')"><span class="badge badge-${k}">${v}</span></div>`).join('')}
   </div></div>`;
 }
 
@@ -485,7 +527,7 @@ function buildDashboard(){
     ${upcoming.length>0?`<div class="section-title">📅 Yaklaşan Randevular</div><div style="padding:0 16px">${upcoming.map(a=>{const c=cs.find(x=>x.id===a.contactId);const d=new Date(a.date+'T12:00:00');return `<div class="apt-card" onclick="go('appointments')"><div class="apt-date"><span class="apt-day">${d.getDate()}</span><span class="apt-month">${MONTHS_TR[d.getMonth()]}</span></div><div class="apt-info"><div class="apt-contact">${esc(c?c.name:'Bilinmiyor')}</div><div class="apt-time">⏰ ${esc(a.time||'')}${a.notes?' · '+esc(a.notes.slice(0,30)):''}</div></div></div>`;}).join('')}</div>`:''}
     <div class="section-title">⚡ Hızlı İşlemler</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px 16px">
-      ${[{icon:'👤',label:'Alıcı Ekle',fn:`openContactForm('buyer')`},{icon:'🏷️',label:'Satıcı Ekle',fn:`openContactForm('seller')`},{icon:'🏠',label:'Mülk Ekle',fn:`go('property-form',{form:{status:'avail'},editId:null})`},{icon:'🔗',label:'Eşleştir',fn:`go('matching')`}]
+      ${[{icon:'👤',label:'Alıcı Ekle',fn:`openContactForm('buyer')`},{icon:'🏷️',label:'Satıcı Ekle',fn:`openContactForm('seller')`},{icon:'🏠',label:'Mülk Ekle',fn:`go('property-form',{editId:null})`},{icon:'🔗',label:'Eşleştir',fn:`go('matching')`}]
       .map(b=>`<button onclick="${b.fn}" style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;align-items:center;gap:10px;font-size:14px;font-weight:600;cursor:pointer"><span style="font-size:22px">${b.icon}</span>${b.label}</button>`).join('')}
     </div>
   </div>`;
@@ -526,7 +568,7 @@ function buildContacts(){
       :`<div class="card">${cs.map(c=>{
         const isSel=S.selectedIds.includes(c.id);
         return `<div class="contact-row${isSel?' selected':''}" onclick="${S.selectMode?`toggleSelect('${c.id}')`:`go('contact-detail',{id:'${c.id}'})`}">
-          ${S.selectMode?`<div class="contact-checkbox${isSel?' checked':''}">${isSel?'<svg width="12" height="12" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg>':''}</div>`:''}
+          ${S.selectMode?`<div class="multi-checkbox${isSel?' checked':''}">${isSel?'<svg width="12" height="12" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg>':''}</div>`:''}
           <div class="avatar ${c.type==='buyer'?'av-buyer':'av-seller'}">${initials(c.name)}</div>
           <div class="contact-info"><div class="contact-name">${esc(c.name)}</div><div class="contact-meta">${esc(c.phone||'-')} · ${esc(c.district||'')}</div></div>
           <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
@@ -547,7 +589,6 @@ function buildContactDetail(){
   if(!c){ setTimeout(back, 0); return `<div style="padding:40px;text-align:center;color:var(--muted)">Kişi bulunamadı.</div>`; }
   
   const apts=S.data.appointments.filter(a=>a.contactId===c.id&&!a.done);
-  // YENİ: Arayan kişinin ilgilendiği mülkü bul (Arayanlar Havuzu için eklendi)
   const intProp=c.interestedIn ? S.data.properties.find(p=>p.id===c.interestedIn) : null;
   const waNum=fmtPhone(c.phone);
 
@@ -735,23 +776,35 @@ function saveContact(){
   scheduleSave();S.params={};back();
 }
 
-/* ====== YENİ: PROPERTIES VE FİLTRELEME ====== */
+/* ====== PROPERTIES ====== */
 function buildProperties(){
   let props = S.data.properties || [];
   if(S.filter.propObj === 'portfolio') props = props.filter(p => p.isPortfolio);
 
-  return `<div class="content">${buildHeader('Mülkler')}
+  const allIds=props.map(p=>p.id);
+  const allSelected=allIds.length>0&&allIds.every(id=>S.selectedPropIds.includes(id));
+
+  const headerRight=S.propSelectMode
+    ?`<button class="header-action" onclick="selectAllPropsVisible()" title="${allSelected?'Seçimi kaldır':'Tümünü seç'}">${allSelected?'☑':'☐'}</button><button class="header-action" style="font-size:14px" onclick="togglePropSelectMode()">İptal</button>`
+    :`<button class="header-action" title="Seçim modu" onclick="togglePropSelectMode()">☐</button>`;
+
+  return `<div class="content">${buildHeader('Mülkler',false,headerRight)}
     <div class="segment">
       <button class="seg-btn ${S.filter.propObj!=='portfolio'?'on':''}" onclick="S.filter.propObj='all';render()">Tüm Mülkler</button>
       <button class="seg-btn ${S.filter.propObj==='portfolio'?'on':''}" onclick="S.filter.propObj='portfolio';render()">🌟 İlanlarım</button>
     </div>
+    ${S.propSelectMode?`<div style="padding:0 16px 8px;font-size:13px;color:var(--muted)">Mülklere dokunarak seçin · ${S.selectedPropIds.length} seçili</div>`:''}
     <div style="padding:0 16px 14px">
       ${props.length===0?`<div class="empty"><div class="empty-icon">🏘️</div><div class="empty-title">Mülk bulunamadı</div></div>`
       :props.map(p=>{
         const owner=S.data.contacts.find(x=>x.id===p.ownerId);
-        return `<div class="prop-card" onclick="viewProperty('${p.id}')" style="${p.status==='sold'?'background:#f8fafc; border-color:#cbd5e1':''}">
+        const isSel=S.selectedPropIds.includes(p.id);
+        return `<div class="prop-card${isSel?' selected':''}" onclick="${S.propSelectMode?`togglePropSelect('${p.id}')`:`viewProperty('${p.id}')`}" style="${!isSel&&p.status==='sold'?'background:#f8fafc; border-color:#cbd5e1':''}">
           <div style="display:flex;justify-content:space-between;align-items:flex-start">
-            <div class="prop-title" style="${p.status==='sold'?'text-decoration:line-through;color:var(--muted)':''}">${esc(p.title||p.propType||'Mülk')}</div>
+            <div style="display:flex;align-items:flex-start;gap:10px">
+              ${S.propSelectMode?`<div class="multi-checkbox${isSel?' checked':''}">${isSel?'<svg width="12" height="12" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg>':''}</div>`:''}
+              <div class="prop-title" style="${p.status==='sold'?'text-decoration:line-through;color:var(--muted)':''}">${esc(p.title||p.propType||'Mülk')}</div>
+            </div>
             <span class="badge badge-${p.status||'avail'}">${{avail:'Satışta',reserved:'Rezerve',sold:'Satıldı'}[p.status||'avail']}</span>
           </div>
           <div class="prop-meta">${p.isPortfolio?`<span style="color:var(--amber);font-weight:700">🌟 Yetkili Portföy</span><br>`:''}${p.adNumber?`<span style="color:var(--blue);font-weight:600">İlan No: ${esc(p.adNumber)}</span><br>`:''}${[p.propType,p.district,p.rooms,p.sqm?p.sqm+'m²':''].filter(Boolean).join(' · ')}</div>
@@ -759,7 +812,7 @@ function buildProperties(){
           ${p.price?`<div class="prop-price" style="margin-top:8px; ${p.status==='sold'?'color:var(--muted)':''}">${numFmt(p.price)}</div>`:''}
         </div>`;}).join('')}
     </div>
-    <button class="fab" onclick="go('property-form',{form:{status:'avail'},editId:null})">+</button>
+    ${!S.propSelectMode?`<button class="fab" onclick="go('property-form',{editId:null})">+</button>`:''}
   </div>`;
 }
 
@@ -776,7 +829,7 @@ function buildPropertyDetail(){
   const owner=S.data.contacts.find(x=>x.id===p.ownerId);
   const leads=S.data.contacts.filter(x=>x.interestedIn===p.id);
 
-  return `<div class="content">${buildHeader('Mülk Detayı',true,`<button class="header-action" onclick="go('property-form',{form:{...S.data.properties.find(x=>x.id==='${p.id}')},editId:'${p.id}'})">✏️</button>`)}
+  return `<div class="content">${buildHeader('Mülk Detayı',true,`<button class="header-action" onclick="editProperty('${p.id}')">✏️</button>`)}
     <div class="detail-hero" style="${p.isPortfolio?'background:linear-gradient(135deg, var(--blue), var(--blue-mid))':''}">
       <div style="font-size:28px;font-weight:800;margin-bottom:4px">${numFmt(p.price)||'-'}</div>
       <div style="font-size:16px;opacity:0.9">${esc(p.title||p.propType||'Mülk')}</div>
@@ -804,15 +857,29 @@ function buildPropertyDetail(){
         <div class="detail-section-header" style="background:var(--blue-light);color:var(--blue)">Bu İlanla İlgilenenler (${leads.length})</div>
         ${leads.length===0?`<div style="padding:20px;text-align:center;font-size:13px;color:var(--muted)">Henüz ilgilenen bir alıcı eklenmemiş.</div>`
         :leads.map(l=>`<div class="contact-row" onclick="go('contact-detail',{id:'${l.id}'})"><div class="avatar av-buyer">${initials(l.name)}</div><div class="contact-info"><div class="contact-name">${esc(l.name)}</div><div class="contact-meta">${numFmt(l.budget)||'-'} · ${esc(l.phone||'')}</div></div><span class="badge badge-${l.heat||'warm'}">${{hot:'🔴',warm:'🟡',cold:'🔵'}[l.heat||'warm']}</span></div>`).join('')}
-        <button class="btn-secondary" style="width:100%;border:none;border-top:1px solid var(--border);border-radius:0 0 14px 14px;color:var(--blue);background:#fff" onclick="go('contact-form',{form:{type:'buyer',interestedIn:'${p.id}',district:'${esc(p.district||'')}',propType:'${esc(p.propType||'')}',budget:'${esc(p.price||'')}'},editId:null})">➕ İlgilenen / Arayan Ekle</button>
+        <button class="btn-secondary" style="width:100%;border:none;border-top:1px solid var(--border);border-radius:0 0 14px 14px;color:var(--blue);background:#fff" onclick="addLeadFor('${p.id}')">➕ İlgilenen / Arayan Ekle</button>
       </div>
     </div>
   </div>`;
 }
 
+function editProperty(id){
+  const p=S.data.properties.find(x=>x.id===id);
+  if(!p)return;
+  S.params={form:{...p},editId:id};
+  go('property-form');
+}
+
+function addLeadFor(id){
+  const p=S.data.properties.find(x=>x.id===id);
+  if(!p)return;
+  S.params={form:{type:'buyer',interestedIn:p.id,district:p.district||'',propType:p.propType||'',budget:p.price||''},editId:null};
+  go('contact-form');
+}
+
 function buildPropertyForm(){
-  const f=S.params.form||{status:'avail'};
   const isEdit=!!S.params.editId;
+  const f=S.params.form||{status:'avail'};
   const sellers=S.data.contacts.filter(x=>x.type==='seller');
   const pStatus=f.status||'avail';
   return `<div class="form-screen">${buildHeader(isEdit?'Mülkü Düzenle':'Yeni Mülk',true)}
@@ -866,7 +933,9 @@ function saveProperty(){
 }
 function delProperty(id){
   if(!confirm('Bu mülkü kalıcı olarak silmek istiyor musunuz?'))return;
-  S.data.properties=S.data.properties.filter(x=>x.id!==id);scheduleSave();toast('Silindi','success');
+  S.data.contacts.forEach(c => { if(c.interestedIn === id) c.interestedIn = ''; });
+  S.data.properties=S.data.properties.filter(x=>x.id!==id);
+  scheduleSave();toast('Silindi','success');
   S.history.pop();
   back();
 }
