@@ -204,7 +204,7 @@ let S={
   token:null,user:null,fileId:null,saving:false,
   screen:'loading',params:{},history:[],toast:null,
   showUserMenu:false,showBulkSheet:false,
-  filter:{type:'all',status:'all'},
+  filter:{type:'all',status:'all',propObj:'all'}, // YENİ EKLENDİ: propObj (all/portfolio)
   search:'',selectMode:false,selectedIds:[],
   data:{
     contacts:[],properties:[],appointments:[],
@@ -225,7 +225,7 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const uid=()=>Math.random().toString(36).slice(2)+Date.now().toString(36);
 const today=()=>new Date().toISOString().slice(0,10);
-const fmtDate=d=>{if(!d)return '-';const dt=new Date(d+'T12:00:00');return `${dt.getDate()} ${MONTHS_TR[dt.getMonth()} ${dt.getFullYear()}`;};
+const fmtDate=d=>{if(!d)return '-';const dt=new Date(d+'T12:00:00');return `${dt.getDate()} ${MONTHS_TR[dt.getMonth()]} ${dt.getFullYear()}`;};
 const initials=n=>(n||'?').split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
 const fmtPhone=p=>String(p||'').replace(/\D/g,'');
 const numFmt=n=>{if(!n)return '-';const v=parseFloat(String(n).replace(/[^0-9.]/g,''));if(isNaN(v))return n;if(v>=1000000)return (v/1000000).toFixed(2).replace(/\.?0+$/,'')+'M ₺';if(v>=1000)return Math.round(v/1000)+'K ₺';return v+'₺';};
@@ -356,7 +356,6 @@ function selectAllVisible(){
   S.selectedIds=ids.every(id=>S.selectedIds.includes(id))?[]:ids;
   render();
 }
-
 function bulkDelete(){
   if(!S.selectedIds.length)return;
   if(!confirm(`${S.selectedIds.length} kişi kalıcı olarak silinecek. Emin misiniz?`))return;
@@ -377,7 +376,6 @@ function bulkDelete(){
   S.data.contacts=S.data.contacts.filter(x=>!S.selectedIds.includes(x.id));
   S.selectedIds=[];S.selectMode=false;scheduleSave();toast('Silindi','success');render();
 }
-
 function bulkSetStatus(status){
   S.selectedIds.forEach(id=>{const c=S.data.contacts.find(x=>x.id===id);if(c)c.status=status;});
   S.showBulkSheet=false;S.selectedIds=[];S.selectMode=false;scheduleSave();toast('Durum güncellendi','success');render();
@@ -396,6 +394,7 @@ function render(){
     'contact-detail': buildContactDetail,
     'contact-form': buildContactForm,
     properties: buildProperties,
+    'property-detail': buildPropertyDetail, // YENİ EKLENDİ
     'property-form': buildPropertyForm,
     messages: buildMessages,
     'template-form': buildTemplateForm,
@@ -427,7 +426,8 @@ function render(){
 function buildNav(){
   const tabs=[{id:'dashboard',icon:'🏠',label:'Ana Sayfa'},{id:'contacts',icon:'👥',label:'Kişiler'},{id:'properties',icon:'🏘️',label:'Mülkler'},{id:'messages',icon:'💬',label:'Mesajlar'},{id:'appointments',icon:'📅',label:'Takvim'}];
   const inContact=['contact-form','contact-detail'];
-  return `<nav class="bottom-nav">${tabs.map(t=>`<button class="nav-item ${S.screen===t.id||(inContact.includes(S.screen)&&t.id==='contacts')?'active':''}" onclick="go('${t.id}')"><span class="nav-icon">${t.icon}</span><span>${t.label}</span></button>`).join('')}</nav>`;
+  const inProp=['property-form','property-detail']; // YENİ EKLENDİ
+  return `<nav class="bottom-nav">${tabs.map(t=>`<button class="nav-item ${S.screen===t.id||(inContact.includes(S.screen)&&t.id==='contacts')||(inProp.includes(S.screen)&&t.id==='properties')?'active':''}" onclick="go('${t.id}')"><span class="nav-icon">${t.icon}</span><span>${t.label}</span></button>`).join('')}</nav>`;
 }
 
 function buildHeader(title,hasBack,actionBtn){
@@ -730,31 +730,77 @@ function saveContact(){
 
 /* ====== PROPERTIES ====== */
 function buildProperties(){
+  let props = S.data.properties;
+  if(S.filter.propObj === 'portfolio') props = props.filter(p => p.isPortfolio);
+
   return `<div class="content">${buildHeader('Mülkler')}
-    <div style="padding:14px 16px">
-      ${S.data.properties.length===0?`<div class="empty"><div class="empty-icon">🏘️</div><div class="empty-title">Mülk eklenmedi</div><div class="empty-sub">+ butonuyla ilk mülkü ekleyin</div></div>`
-      :S.data.properties.map(p=>{
+    <div class="segment">
+      <button class="seg-btn ${S.filter.propObj!=='portfolio'?'on':''}" onclick="S.filter.propObj='all';render()">Tüm Mülkler</button>
+      <button class="seg-btn ${S.filter.propObj==='portfolio'?'on':''}" onclick="S.filter.propObj='portfolio';render()">🌟 İlanlarım</button>
+    </div>
+    <div style="padding:0 16px 14px">
+      ${props.length===0?`<div class="empty"><div class="empty-icon">🏘️</div><div class="empty-title">Mülk bulunamadı</div></div>`
+      :props.map(p=>{
         const owner=S.data.contacts.find(x=>x.id===p.ownerId);
-        return `<div class="prop-card" onclick="editProperty('${p.id}')" style="${p.status==='sold'?'background:#f8fafc; border-color:#cbd5e1':''}">
+        return `<div class="prop-card" onclick="viewProperty('${p.id}')" style="${p.status==='sold'?'background:#f8fafc; border-color:#cbd5e1':''}">
           <div style="display:flex;justify-content:space-between;align-items:flex-start">
             <div class="prop-title" style="${p.status==='sold'?'text-decoration:line-through;color:var(--muted)':''}">${esc(p.title||p.propType||'Mülk')}</div>
             <span class="badge badge-${p.status||'avail'}">${{avail:'Satışta',reserved:'Rezerve',sold:'Satıldı'}[p.status||'avail']}</span>
           </div>
-          <div class="prop-meta">${p.adNumber?`<span style="color:var(--blue);font-weight:600">İlan No: ${esc(p.adNumber)}</span><br>`:''}${[p.propType,p.district,p.rooms,p.sqm?p.sqm+'m²':''].filter(Boolean).join(' · ')}</div>
-          ${owner?`<div class="prop-meta" style="margin-top:8px; font-weight:700; color:var(--text); padding:4px 8px; background:${p.status==='sold'?'#e2e8f0':'var(--blue-light)'}; border-radius:6px; display:inline-block">👤 Sahibi: ${esc(owner.name)}</div>`:`<div class="prop-meta" style="margin-top:8px; font-style:italic; color:var(--muted)">Sahipsiz Mülk / Satıcı Silinmiş</div>`}
+          <div class="prop-meta">${p.isPortfolio?`<span style="color:var(--amber);font-weight:700">🌟 Yetkili Portföy</span><br>`:''}${p.adNumber?`<span style="color:var(--blue);font-weight:600">İlan No: ${esc(p.adNumber)}</span><br>`:''}${[p.propType,p.district,p.rooms,p.sqm?p.sqm+'m²':''].filter(Boolean).join(' · ')}</div>
+          ${owner?`<div class="prop-meta" style="margin-top:8px; font-weight:700; color:var(--text); padding:4px 8px; background:${p.status==='sold'?'#e2e8f0':'var(--blue-light)'}; border-radius:6px; display:inline-block">👤 Sahibi: ${esc(owner.name)}</div>`:`<div class="prop-meta" style="margin-top:8px; font-style:italic; color:var(--muted)">Sahipsiz Mülk</div>`}
           ${p.price?`<div class="prop-price" style="margin-top:8px; ${p.status==='sold'?'color:var(--muted)':''}">${numFmt(p.price)}</div>`:''}
-          ${p.link?`<div style="font-size:12px;color:var(--blue);margin-top:8px;display:inline-block;text-decoration:underline" onclick="event.stopPropagation();window.open('${esc(p.link)}','_blank')">🔗 İlana Git</div>`:''}
         </div>`;}).join('')}
     </div>
     <button class="fab" onclick="go('property-form',{form:{status:'avail'},editId:null})">+</button>
   </div>`;
 }
 
-function editProperty(id){
-  const p=S.data.properties.find(x=>x.id===id);
-  if(!p)return;
-  S.params={form:{...p},editId:id};
-  go('property-form');
+function viewProperty(id){
+  S.params={id:id};
+  go('property-detail');
+}
+
+/* ====== YENİ: PROPERTY DETAIL ====== */
+function buildPropertyDetail(){
+  const p=S.data.properties.find(x=>x.id===S.params.id);
+  if(!p){ setTimeout(back, 0); return `<div style="padding:40px;text-align:center;color:var(--muted)">Mülk bulunamadı.</div>`; }
+  
+  const owner=S.data.contacts.find(x=>x.id===p.ownerId);
+  const leads=S.data.contacts.filter(x=>x.interestedIn===p.id);
+
+  return `<div class="content">${buildHeader('Mülk Detayı',true,`<button class="header-action" onclick="go('property-form',{form:{...S.data.properties.find(x=>x.id==='${p.id}')},editId:'${p.id}'})">✏️</button>`)}
+    <div class="detail-hero" style="${p.isPortfolio?'background:linear-gradient(135deg, var(--blue), var(--blue-mid))':''}">
+      <div style="font-size:28px;font-weight:800;margin-bottom:4px">${numFmt(p.price)||'-'}</div>
+      <div style="font-size:16px;opacity:0.9">${esc(p.title||p.propType||'Mülk')}</div>
+      <div style="font-size:14px;opacity:0.7;margin-top:4px">${[p.district,p.rooms,p.sqm?p.sqm+'m²':''].filter(Boolean).join(' · ')}</div>
+      ${p.isPortfolio?`<div style="margin-top:12px"><span style="background:#fff;color:var(--blue);padding:4px 10px;border-radius:12px;font-size:12px;font-weight:700">🌟 Benim İlanım (Yetkili)</span></div>`:''}
+    </div>
+    <div class="detail-body">
+      ${p.link?`<button class="wa-btn" style="background:var(--blue)" onclick="window.open('${esc(p.link)}','_blank')">🔗 İlan Linkine Git</button>`:''}
+      
+      <div class="detail-section-card">
+        <div class="detail-section-header">Mülk Bilgileri</div>
+        ${p.adNumber?`<div class="detail-row"><span class="detail-row-label">İlan No</span><span class="detail-row-val">${esc(p.adNumber)}</span></div>`:''}
+        <div class="detail-row"><span class="detail-row-label">Durum</span><span class="detail-row-val">${{avail:'Satışta',reserved:'Rezerve',sold:'Satıldı'}[p.status||'avail']}</span></div>
+        <div class="detail-row"><span class="detail-row-label">Kayıt Tarihi</span><span class="detail-row-val">${esc(p.createdAt||'-')}</span></div>
+      </div>
+
+      <div class="detail-section-card">
+        <div class="detail-section-header">Mülk Sahibi (Satıcı)</div>
+        ${owner?`<div class="contact-row" onclick="go('contact-detail',{id:'${owner.id}'})"><div class="avatar av-seller">${initials(owner.name)}</div><div class="contact-info"><div class="contact-name">${esc(owner.name)}</div><div class="contact-meta">${esc(owner.phone||'-')}</div></div></div>`:`<div style="padding:16px;font-size:14px;color:var(--muted);text-align:center">Satıcı atanmamış veya silinmiş.</div>`}
+      </div>
+
+      ${p.notes?`<div class="detail-section-card"><div class="detail-section-header">Notlar</div><div class="detail-notes">${esc(p.notes)}</div></div>`:''}
+
+      <div class="detail-section-card" style="border-color:var(--blue-mid)">
+        <div class="detail-section-header" style="background:var(--blue-light);color:var(--blue)">Bu İlanla İlgilenenler (${leads.length})</div>
+        ${leads.length===0?`<div style="padding:20px;text-align:center;font-size:13px;color:var(--muted)">Henüz ilgilenen bir alıcı eklenmemiş.</div>`
+        :leads.map(l=>`<div class="contact-row" onclick="go('contact-detail',{id:'${l.id}'})"><div class="avatar av-buyer">${initials(l.name)}</div><div class="contact-info"><div class="contact-name">${esc(l.name)}</div><div class="contact-meta">${numFmt(l.budget)||'-'} · ${esc(l.phone||'')}</div></div><span class="badge badge-${l.heat||'warm'}">${{hot:'🔴',warm:'🟡',cold:'🔵'}[l.heat||'warm']}</span></div>`).join('')}
+        <button class="btn-secondary" style="width:100%;border:none;border-top:1px solid var(--border);border-radius:0 0 14px 14px;color:var(--blue);background:#fff" onclick="go('contact-form',{form:{type:'buyer',interestedIn:'${p.id}',district:'${esc(p.district||'')}',propType:'${esc(p.propType||'')}',budget:'${esc(p.price||'')}'},editId:null})">➕ İlgilenen / Arayan Ekle</button>
+      </div>
+    </div>
+  </div>`;
 }
 
 function buildPropertyForm(){
@@ -764,6 +810,13 @@ function buildPropertyForm(){
   const pStatus=f.status||'avail';
   return `<div class="form-screen">${buildHeader(isEdit?'Mülkü Düzenle':'Yeni Mülk',true)}
     <div class="form-body">
+      <div class="form-group">
+        <label style="display:flex;align-items:center;gap:10px;padding:14px;background:#fff;border:2px solid ${f.isPortfolio?'var(--blue)':'var(--border)'};border-radius:12px;cursor:pointer;transition:all 0.2s">
+          <input type="checkbox" style="width:20px;height:20px;accent-color:var(--blue)" ${f.isPortfolio?'checked':''} onchange="setF('isPortfolio',this.checked,true)">
+          <span style="font-size:15px;font-weight:700;color:${f.isPortfolio?'var(--blue)':'var(--text)'}">🌟 Benim Yetkili Portföyüm</span>
+        </label>
+      </div>
+
       <div class="form-group"><label class="form-label">Mülk Başlığı</label><input class="form-input" type="text" placeholder="Karşıyaka 3+1 Daire" value="${esc(f.title||'')}" oninput="setF('title',this.value)"></div>
       <div class="form-group"><label class="form-label">İlan Numarası</label><input class="form-input" type="text" placeholder="123456789" value="${esc(f.adNumber||'')}" oninput="setF('adNumber',this.value)"></div>
       <div class="form-group"><label class="form-label">İlan Linki</label><input class="form-input" type="url" placeholder="https://sahibinden.com/..." value="${esc(f.link||'')}" oninput="setF('link',this.value)"></div>
@@ -863,7 +916,7 @@ function buildTemplateForm(){
 function saveTpl(){
   const f=S.params.form||{};if(!f.name?.trim()||!f.text?.trim()){toast('Ad ve metin zorunludur','error');return;}
   if(S.params.editId)S.data.templates=S.data.templates.map(t=>t.id===S.params.editId?{...f,id:S.params.editId}:t);
-  else S.data.templates.push({...f,id:uid());
+  else S.data.templates.push({...f,id:uid()});
   scheduleSave();toast('Kaydedildi','success');S.params={tab:'templates'};back();
 }
 
@@ -965,7 +1018,7 @@ function buildPipeline(){
   </div>`;
 }
 
-/* ====== YENİ AKILLI EŞLEŞTİRME ====== */
+/* ====== AKILLI EŞLEŞTİRME ====== */
 function buildMatching(){
   const buyers=S.data.contacts.filter(x=>x.type==='buyer'&&x.status!=='closed');
   const props=S.data.properties.filter(x=>x.status!=='sold');
