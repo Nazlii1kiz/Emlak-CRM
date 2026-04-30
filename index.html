@@ -66,7 +66,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .contact-info{flex:1;min-width:0}
 .contact-name{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .contact-meta{font-size:13px;color:var(--muted);margin-top:2px}
-/* MULTI SELECT */
 .multi-checkbox{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;background:#fff;transition:all .15s}
 .multi-checkbox.checked{background:var(--blue);border-color:var(--blue)}
 .select-bar{position:fixed;bottom:64px;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#1a2332;color:#fff;padding:12px 16px;display:flex;align-items:center;gap:8px;z-index:101}
@@ -74,9 +73,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .sel-action-btn{padding:8px 12px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;border:none;white-space:nowrap}
 .sel-btn-red{background:#E24B4A;color:#fff}
 .sel-btn-gray{background:rgba(255,255,255,0.15);color:#fff}
-/* FAB */
 .fab{position:fixed;bottom:76px;right:20px;width:54px;height:54px;border-radius:50%;background:var(--blue);color:#fff;border:none;font-size:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(24,95,165,0.4);z-index:99}
-/* SEARCH + CHIPS */
 .search-bar{padding:12px 16px;background:#f0f4f8;display:flex;gap:8px;align-items:center}
 .search-input{flex:1;background:#fff;border:1px solid var(--border);border-radius:24px;padding:9px 14px;font-size:15px;color:var(--text);outline:none}
 .search-input:focus{border-color:var(--blue)}
@@ -84,7 +81,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .chips::-webkit-scrollbar{display:none}
 .chip{padding:6px 14px;border-radius:20px;font-size:13px;border:1px solid var(--border);background:#fff;color:var(--muted);cursor:pointer;white-space:nowrap;font-weight:500}
 .chip.on{background:var(--blue);color:#fff;border-color:var(--blue)}
-/* FORM */
 .form-screen{background:#f0f4f8;min-height:100vh}
 .form-body{padding:16px}
 .form-group{margin-bottom:14px}
@@ -111,7 +107,6 @@ select.form-input{appearance:none;background-image:url("data:image/svg+xml,%3Csv
 .btn-small-blue{background:var(--blue-light);color:var(--blue);border-color:transparent}
 .btn-small-red{background:var(--red-light);color:var(--red);border-color:transparent}
 .btn-small-green{background:var(--green-light);color:var(--green);border-color:transparent}
-/* DETAIL */
 .detail-hero{background:var(--blue);padding:20px 16px 24px;color:#fff}
 .detail-hero-top{display:flex;align-items:flex-start;gap:14px}
 .hero-avatar{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;flex-shrink:0}
@@ -129,12 +124,10 @@ select.form-input{appearance:none;background-image:url("data:image/svg+xml,%3Csv
 .detail-notes{padding:12px 14px;font-size:14px;line-height:1.6;color:var(--text)}
 .wa-btn{display:flex;align-items:center;gap:8px;background:#25D366;color:#fff;padding:13px 20px;border-radius:12px;font-size:15px;font-weight:700;border:none;cursor:pointer;width:100%;justify-content:center;margin-bottom:8px}
 .detail-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-/* EMPTY */
 .empty{text-align:center;padding:48px 24px;color:var(--muted)}
 .empty-icon{font-size:48px;margin-bottom:12px}
 .empty-title{font-size:17px;font-weight:600;color:var(--text);margin-bottom:6px}
 .empty-sub{font-size:14px;line-height:1.5}
-/* APPOINTMENTS */
 .apt-card{background:var(--card);border-radius:14px;border:1px solid var(--border);padding:14px;margin-bottom:10px;display:flex;gap:12px}
 .apt-date{min-width:44px;text-align:center;background:var(--blue-light);border-radius:10px;padding:8px 6px;display:flex;flex-direction:column;align-items:center}
 .apt-day{font-size:20px;font-weight:700;color:var(--blue);line-height:1}
@@ -142,39 +135,31 @@ select.form-input{appearance:none;background-image:url("data:image/svg+xml,%3Csv
 .apt-info{flex:1;min-width:0}
 .apt-contact{font-size:15px;font-weight:600}
 .apt-time{font-size:13px;color:var(--muted);margin-top:3px}
-/* TEMPLATE */
 .template-card{background:var(--card);border-radius:14px;border:1px solid var(--border);padding:14px;margin-bottom:10px}
 .template-name{font-size:15px;font-weight:700;margin-bottom:6px}
 .template-text{font-size:13px;color:var(--muted);line-height:1.5;white-space:pre-wrap;margin-bottom:10px}
 .template-actions{display:flex;gap:8px;flex-wrap:wrap}
-/* SCHEDULED */
 .sched-card{background:var(--card);border-radius:14px;border:1px solid var(--border);padding:14px;margin-bottom:10px}
 .sched-name{font-size:15px;font-weight:700;margin-bottom:4px}
 .sched-meta{font-size:13px;color:var(--muted);line-height:1.6}
 .sched-status{display:flex;align-items:center;gap:6px;margin-top:8px}
-/* TODAY BANNER */
 .today-banner{background:var(--blue);color:#fff;margin:14px 16px;border-radius:14px;padding:14px 16px}
 .today-title{font-size:13px;opacity:.8;margin-bottom:4px}
-/* PIPELINE */
 .pipeline-col{flex:0 0 250px;background:#f8fafc;border-radius:12px;padding:10px}
 .pipeline-col-title{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:8px}
 .pipeline-item{background:#fff;border-radius:10px;border:1px solid var(--border);padding:10px 12px;margin-bottom:8px;cursor:pointer}
 .pipeline-name{font-size:14px;font-weight:600}
 .pipeline-meta{font-size:12px;color:var(--muted);margin-top:2px}
-/* MATCH */
 .match-card{background:var(--card);border-radius:14px;border:1px solid var(--border);padding:14px;margin-bottom:10px}
 .match-header{display:flex;justify-content:space-between;margin-bottom:10px}
-/* PROPERTY */
 .prop-card{background:var(--card);border-radius:14px;border:1px solid var(--border);padding:14px;margin-bottom:10px;cursor:pointer;transition:all .15s}
-.prop-card.selected{background:#EEF5FC; border-color:var(--blue)}
+.prop-card.selected{background:#EEF5FC;border-color:var(--blue)}
 .prop-title{font-size:16px;font-weight:700;margin-bottom:4px}
 .prop-meta{font-size:13px;color:var(--muted)}
 .prop-price{font-size:18px;font-weight:700;color:var(--blue);margin-top:6px}
-/* SEGMENT */
 .segment{display:flex;background:#e8edf2;border-radius:10px;padding:3px;margin:0 16px 14px}
 .seg-btn{flex:1;padding:8px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;background:none;color:var(--muted)}
 .seg-btn.on{background:#fff;color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.1)}
-/* OVERLAY */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;display:flex;align-items:flex-end}
 .bottom-sheet{background:#fff;border-radius:20px 20px 0 0;padding:20px 16px 40px;width:100%;max-width:430px;margin:0 auto}
 .sheet-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px}
@@ -187,11 +172,7 @@ select.form-input{appearance:none;background-image:url("data:image/svg+xml,%3Csv
 <body>
 <div class="app" id="app"><div style="display:flex;align-items:center;justify-content:center;min-height:100vh;color:#888;font-size:16px">Yükleniyor...</div></div>
 <script>
-/* ============================================================
-   AYARLAR
-   ============================================================ */
 const CLIENT_ID = '1049060962622-n298h98ccbsmohihs4hv9jmjafhvv732.apps.googleusercontent.com';
-/* ============================================================ */
 
 const SCOPES='https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email';
 const FILE_NAME='emlak_crm_data.json';
@@ -205,7 +186,7 @@ let S={
   token:null,user:null,fileId:null,saving:false,
   screen:'loading',params:{},history:[],toast:null,
   showUserMenu:false,showBulkSheet:false,showPropBulkSheet:false,
-  filter:{type:'all',status:'all',propObj:'all'}, 
+  filter:{type:'all',status:'all',propObj:'all'},
   search:'',selectMode:false,selectedIds:[],
   propSelectMode:false,selectedPropIds:[],
   data:{
@@ -222,7 +203,6 @@ let S={
 
 let saveTimer=null,notifTimer=null,tokenClient=null;
 
-/* ====== UTILS ====== */
 const $=id=>document.getElementById(id);
 const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const uid=()=>Math.random().toString(36).slice(2)+Date.now().toString(36);
@@ -352,29 +332,24 @@ function notify(title,body){if('Notification'in window&&Notification.permission=
 /* ====== MULTI SELECT - KİŞİLER ====== */
 function toggleSelectMode(){S.selectMode=!S.selectMode;S.selectedIds=[];render();}
 function toggleSelect(id){
-  S.selectedIds=S.selectedIds.includes(id)?S.selectedIds.filter(x=>x!==id):[...S.selectedIds,id];
-  render();
+  S.selectedIds=S.selectedIds.includes(id)?S.selectedIds.filter(x=>x!==id):[...S.selectedIds,id];render();
 }
 function selectAllVisible(){
   const ids=getFiltered().map(c=>c.id);
-  S.selectedIds=ids.every(id=>S.selectedIds.includes(id))?[]:ids;
-  render();
+  S.selectedIds=ids.every(id=>S.selectedIds.includes(id))?[]:ids;render();
 }
 function bulkDelete(){
   if(!S.selectedIds.length)return;
   if(!confirm(`${S.selectedIds.length} kişi kalıcı olarak silinecek. Emin misiniz?`))return;
-
-  let propsToDelete = 0;
-  S.selectedIds.forEach(id => { propsToDelete += S.data.properties.filter(p => p.ownerId === id).length; });
-
-  if(propsToDelete > 0) {
-    if(confirm(`Seçilen kişilere ait toplam ${propsToDelete} adet mülk bulundu. Mülkleri de silelim mi?\n\n(Tamam = Mülkleri de sil, İptal = Mülkleri sahipsiz bırakarak sakla)`)) {
-      S.data.properties = S.data.properties.filter(p => !S.selectedIds.includes(p.ownerId));
-    } else {
-      S.data.properties.forEach(p => { if(S.selectedIds.includes(p.ownerId)) p.ownerId = ''; });
+  let propsToDelete=0;
+  S.selectedIds.forEach(id=>{propsToDelete+=S.data.properties.filter(p=>p.ownerId===id).length;});
+  if(propsToDelete>0){
+    if(confirm(`Seçilen kişilere ait toplam ${propsToDelete} adet mülk bulundu. Mülkleri de silelim mi?`)){
+      S.data.properties=S.data.properties.filter(p=>!S.selectedIds.includes(p.ownerId));
+    }else{
+      S.data.properties.forEach(p=>{if(S.selectedIds.includes(p.ownerId))p.ownerId='';});
     }
   }
-
   S.data.contacts=S.data.contacts.filter(x=>!S.selectedIds.includes(x.id));
   S.selectedIds=[];S.selectMode=false;scheduleSave();toast('Silindi','success');render();
 }
@@ -390,23 +365,19 @@ function bulkSetHeat(heat){
 /* ====== MULTI SELECT - MÜLKLER ====== */
 function togglePropSelectMode(){S.propSelectMode=!S.propSelectMode;S.selectedPropIds=[];render();}
 function togglePropSelect(id){
-  S.selectedPropIds=S.selectedPropIds.includes(id)?S.selectedPropIds.filter(x=>x!==id):[...S.selectedPropIds,id];
-  render();
+  S.selectedPropIds=S.selectedPropIds.includes(id)?S.selectedPropIds.filter(x=>x!==id):[...S.selectedPropIds,id];render();
 }
 function selectAllPropsVisible(){
-  let props = S.data.properties || [];
-  if(S.filter.propObj === 'portfolio') props = props.filter(p => p.isPortfolio);
+  let props=S.data.properties||[];
+  if(S.filter.propObj==='portfolio')props=props.filter(p=>p.isPortfolio);
   const ids=props.map(p=>p.id);
-  S.selectedPropIds=ids.every(id=>S.selectedPropIds.includes(id))?[]:ids;
-  render();
+  S.selectedPropIds=ids.every(id=>S.selectedPropIds.includes(id))?[]:ids;render();
 }
 function propBulkDelete(){
   if(!S.selectedPropIds.length)return;
   if(!confirm(`${S.selectedPropIds.length} mülk kalıcı olarak silinecek. Emin misiniz?`))return;
-  
-  S.data.contacts.forEach(c => { if(S.selectedPropIds.includes(c.interestedIn)) c.interestedIn = ''; });
+  S.data.contacts.forEach(c=>{if(S.selectedPropIds.includes(c.interestedIn))c.interestedIn='';});
   S.data.properties=S.data.properties.filter(x=>!S.selectedPropIds.includes(x.id));
-  
   S.selectedPropIds=[];S.propSelectMode=false;scheduleSave();toast('Mülkler silindi','success');render();
 }
 function propBulkSetStatus(status){
@@ -417,30 +388,16 @@ function propBulkSetStatus(status){
 /* ====== RENDER ====== */
 function render(){
   const screens={
-    login: buildLogin,
-    dashboard: buildDashboard,
-    contacts: buildContacts,
-    'contact-detail': buildContactDetail,
-    'contact-form': buildContactForm,
-    properties: buildProperties,
-    'property-detail': buildPropertyDetail,
-    'property-form': buildPropertyForm,
-    messages: buildMessages,
-    'template-form': buildTemplateForm,
-    'schedule-form': buildScheduleForm,
-    appointments: buildAppointments,
-    'appointment-form': buildAptForm,
-    matching: buildMatching,
-    pipeline: buildPipeline
+    login:buildLogin,dashboard:buildDashboard,contacts:buildContacts,
+    'contact-detail':buildContactDetail,'contact-form':buildContactForm,
+    properties:buildProperties,'property-detail':buildPropertyDetail,'property-form':buildPropertyForm,
+    messages:buildMessages,'template-form':buildTemplateForm,'schedule-form':buildScheduleForm,
+    appointments:buildAppointments,'appointment-form':buildAptForm,
+    matching:buildMatching,pipeline:buildPipeline
   };
-
-  let content = '';
-  if(S.screen === 'loading') {
-    content = `<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;color:var(--muted)">Yükleniyor...</div>`;
-  } else {
-    content = (screens[S.screen] || screens.dashboard)();
-  }
-
+  let content=S.screen==='loading'
+    ?`<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;color:var(--muted)">Yükleniyor...</div>`
+    :(screens[S.screen]||screens.dashboard)();
   $('app').innerHTML=`<div class="app">
     <div id="savingBar" class="saving-bar" style="display:${S.saving?'block':'none'}"></div>
     ${S.toast?`<div class="toast toast-${S.toast.type}">${esc(S.toast.msg)}</div>`:''}
@@ -470,17 +427,9 @@ function buildUserMenu(){
   return `<div class="overlay" onclick="S.showUserMenu=false;render()"><div class="bottom-sheet" onclick="event.stopPropagation()"><div class="sheet-handle"></div><div style="display:flex;align-items:center;gap:14px;margin-bottom:20px"><div class="avatar av-buyer" style="width:52px;height:52px;font-size:18px">${S.user?.picture?`<img src="${esc(S.user.picture)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`:initials(S.user?.name)}</div><div><div style="font-size:17px;font-weight:700">${esc(S.user?.name||'')}</div><div style="font-size:13px;color:var(--muted)">${esc(S.user?.email||'')}</div></div></div><div style="font-size:13px;color:var(--muted);margin-bottom:16px">Verileriniz Google Drive'ınızda güvenle saklanmaktadır.</div><button class="btn-danger" onclick="signOut()">Çıkış Yap</button></div></div>`;
 }
 
-/* Seçim Barları */
-function buildSelectBar(){
-  const n=S.selectedIds.length;
-  return `<div class="select-bar"><span class="select-bar-info">${n} kişi seçildi</span><button class="sel-action-btn sel-btn-gray" onclick="S.showBulkSheet=true;render()">Durum/Sıcaklık</button><button class="sel-action-btn sel-btn-red" onclick="bulkDelete()">🗑️ Sil</button></div>`;
-}
-function buildPropSelectBar(){
-  const n=S.selectedPropIds.length;
-  return `<div class="select-bar"><span class="select-bar-info">${n} mülk seçildi</span><button class="sel-action-btn sel-btn-gray" onclick="S.showPropBulkSheet=true;render()">Durum</button><button class="sel-action-btn sel-btn-red" onclick="propBulkDelete()">🗑️ Sil</button></div>`;
-}
+function buildSelectBar(){return `<div class="select-bar"><span class="select-bar-info">${S.selectedIds.length} kişi seçildi</span><button class="sel-action-btn sel-btn-gray" onclick="S.showBulkSheet=true;render()">Durum/Sıcaklık</button><button class="sel-action-btn sel-btn-red" onclick="bulkDelete()">🗑️ Sil</button></div>`;}
+function buildPropSelectBar(){return `<div class="select-bar"><span class="select-bar-info">${S.selectedPropIds.length} mülk seçildi</span><button class="sel-action-btn sel-btn-gray" onclick="S.showPropBulkSheet=true;render()">Durum</button><button class="sel-action-btn sel-btn-red" onclick="propBulkDelete()">🗑️ Sil</button></div>`;}
 
-/* Çoklu İşlem Menüleri */
 function buildBulkSheet(){
   return `<div class="overlay" onclick="S.showBulkSheet=false;render()"><div class="bottom-sheet" onclick="event.stopPropagation()"><div class="sheet-handle"></div><div style="font-size:16px;font-weight:700;margin-bottom:16px">${S.selectedIds.length} kişi için güncelle</div>
     <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:6px">Durum değiştir</div>
@@ -499,7 +448,7 @@ function buildPropBulkSheet(){
 /* ====== LOGIN ====== */
 function buildLogin(){
   const nc=!CLIENT_ID||CLIENT_ID.includes('BURAYA');
-  return `<div class="login-screen"><div class="login-logo"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></div><div class="login-title">Emlak CRM</div><div class="login-sub">Müşteri ve mülk yönetiminiz,<br>Google Drive'ınızda güvende</div>${nc?`<div class="config-warning"><b>⚠️ Kurulum Gerekli</b>Google Client ID girilmeden uygulama çalışmaz. Kurulum rehberini takip edin.</div>`:`<button class="login-btn" onclick="signIn()"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>Google ile Giriş Yap</button>`}</div>`;
+  return `<div class="login-screen"><div class="login-logo"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></div><div class="login-title">Emlak CRM</div><div class="login-sub">Müşteri ve mülk yönetiminiz,<br>Google Drive'ınızda güvende</div>${nc?`<div class="config-warning"><b>⚠️ Kurulum Gerekli</b>Google Client ID girilmeden uygulama çalışmaz.</div>`:`<button class="login-btn" onclick="signIn()"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>Google ile Giriş Yap</button>`}</div>`;
 }
 
 /* ====== DASHBOARD ====== */
@@ -527,7 +476,7 @@ function buildDashboard(){
     ${upcoming.length>0?`<div class="section-title">📅 Yaklaşan Randevular</div><div style="padding:0 16px">${upcoming.map(a=>{const c=cs.find(x=>x.id===a.contactId);const d=new Date(a.date+'T12:00:00');return `<div class="apt-card" onclick="go('appointments')"><div class="apt-date"><span class="apt-day">${d.getDate()}</span><span class="apt-month">${MONTHS_TR[d.getMonth()]}</span></div><div class="apt-info"><div class="apt-contact">${esc(c?c.name:'Bilinmiyor')}</div><div class="apt-time">⏰ ${esc(a.time||'')}${a.notes?' · '+esc(a.notes.slice(0,30)):''}</div></div></div>`;}).join('')}</div>`:''}
     <div class="section-title">⚡ Hızlı İşlemler</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px 16px">
-      ${[{icon:'👤',label:'Alıcı Ekle',fn:`openContactForm('buyer')`},{icon:'🏷️',label:'Satıcı Ekle',fn:`openContactForm('seller')`},{icon:'🏠',label:'Mülk Ekle',fn:`go('property-form',{form:{status:'avail'},editId:null})`},{icon:'🔗',label:'Eşleştir',fn:`go('matching')`}]
+      ${[{icon:'👤',label:'Alıcı Ekle',fn:`openContactForm('buyer')`},{icon:'🏷️',label:'Satıcı Ekle',fn:`openContactForm('seller')`},{icon:'🏠',label:'Mülk Ekle',fn:`go('property-form',{editId:null})`},{icon:'🔗',label:'Eşleştir',fn:`go('matching')`}]
       .map(b=>`<button onclick="${b.fn}" style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;align-items:center;gap:10px;font-size:14px;font-weight:600;cursor:pointer"><span style="font-size:22px">${b.icon}</span>${b.label}</button>`).join('')}
     </div>
   </div>`;
@@ -548,11 +497,9 @@ function buildContacts(){
   const sellers=S.data.contacts.filter(x=>x.type==='seller').length;
   const allIds=cs.map(c=>c.id);
   const allSelected=allIds.length>0&&allIds.every(id=>S.selectedIds.includes(id));
-
   const headerRight=S.selectMode
-    ?`<button class="header-action" onclick="selectAllVisible()" title="${allSelected?'Seçimi kaldır':'Tümünü seç'}">${allSelected?'☑':'☐'}</button><button class="header-action" style="font-size:14px" onclick="toggleSelectMode()">İptal</button>`
-    :`<button class="header-action" title="Seçim modu" onclick="toggleSelectMode()">☐</button><button class="header-action" onclick="go('pipeline')">⬜</button>`;
-
+    ?`<button class="header-action" onclick="selectAllVisible()">${allSelected?'☑':'☐'}</button><button class="header-action" style="font-size:14px" onclick="toggleSelectMode()">İptal</button>`
+    :`<button class="header-action" onclick="toggleSelectMode()">☐</button><button class="header-action" onclick="go('pipeline')">⬜</button>`;
   return `<div class="content">${buildHeader('Kişiler',false,headerRight)}
     <div class="search-bar"><input class="search-input" type="search" placeholder="İsim, telefon, semt..." value="${esc(S.search)}" oninput="S.search=this.value;render()"></div>
     <div class="chips">
@@ -581,20 +528,15 @@ function buildContacts(){
   </div>`;
 }
 
-// BUG FIX: Paremetreyi go objesine ekleyerek gönderdik
-function openContactForm(type){
-  go('contact-form', {form:{type:type||'buyer'},editId:null});
-}
+function openContactForm(type){S.params={form:{type:type||'buyer'},editId:null};go('contact-form');}
 
 /* ====== CONTACT DETAIL ====== */
 function buildContactDetail(){
   const c=S.data.contacts.find(x=>x.id===S.params.id);
-  if(!c){ setTimeout(back, 0); return `<div style="padding:40px;text-align:center;color:var(--muted)">Kişi bulunamadı.</div>`; }
-  
+  if(!c){setTimeout(back,0);return `<div style="padding:40px;text-align:center;color:var(--muted)">Yükleniyor...</div>`;}
   const apts=S.data.appointments.filter(a=>a.contactId===c.id&&!a.done);
-  const intProp=c.interestedIn ? S.data.properties.find(p=>p.id===c.interestedIn) : null;
+  const intProp=c.interestedIn?S.data.properties.find(p=>p.id===c.interestedIn):null;
   const waNum=fmtPhone(c.phone);
-
   return `<div class="content">${buildHeader(c.name,true,`<button class="header-action" onclick="editContact('${c.id}')">✏️</button>`)}
     <div class="detail-hero">
       <div class="detail-hero-top"><div class="hero-avatar ${c.type==='buyer'?'av-buyer':'av-seller'}">${initials(c.name)}</div><div style="flex:1"><div class="detail-name">${esc(c.name)}</div><div class="detail-phone">${esc(c.phone||'')}</div></div></div>
@@ -606,9 +548,7 @@ function buildContactDetail(){
     </div>
     <div class="detail-body">
       ${waNum?`<button class="wa-btn" onclick="waOpen('${waNum}','')"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.785 23.542l4.61-1.478A11.944 11.944 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818c-2.151 0-4.152-.64-5.824-1.74l-.418-.248-4.33 1.388 1.405-4.22-.272-.432A9.808 9.808 0 0 1 2.182 12c0-5.423 4.395-9.818 9.818-9.818 5.422 0 9.818 4.395 9.818 9.818 0 5.422-4.396 9.818-9.818 9.818z"/></svg>WhatsApp Aç</button>`:''}
-      
-      ${intProp?`<div class="detail-section-card" style="border-color:var(--blue-mid)"><div class="detail-section-header" style="background:var(--blue-light);color:var(--blue)">İlgilendiği / Aradığı İlan</div><div class="contact-row" onclick="viewProperty('${intProp.id}')"><div class="avatar" style="background:var(--blue);color:#fff;font-size:18px">🏠</div><div class="contact-info"><div class="contact-name">${esc(intProp.title||intProp.propType||'Mülk')}</div><div class="contact-meta">${esc(intProp.district||'')} · ${numFmt(intProp.price)||'-'}</div></div></div></div>`:''}
-
+      ${intProp?`<div class="detail-section-card" style="border-color:var(--blue-mid)"><div class="detail-section-header" style="background:var(--blue-light);color:var(--blue)">İlgilendiği İlan</div><div class="contact-row" onclick="go('property-detail',{id:'${intProp.id}'})"><div class="avatar" style="background:var(--blue);color:#fff;font-size:18px">🏠</div><div class="contact-info"><div class="contact-name">${esc(intProp.title||intProp.propType||'Mülk')}</div><div class="contact-meta">${esc(intProp.district||'')} · ${numFmt(intProp.price)||'-'}</div></div></div></div>`:''}
       <div class="detail-section-card">
         <div class="detail-section-header">Kişisel Bilgiler</div>
         ${c.email?`<div class="detail-row"><span class="detail-row-label">E-posta</span><span class="detail-row-val">${esc(c.email)}</span></div>`:''}
@@ -643,30 +583,20 @@ function buildContactDetail(){
 
 function updateStatus(id,s){const c=S.data.contacts.find(x=>x.id===id);if(c){c.status=s;scheduleSave();render();}}
 function updateHeat(id,h){const c=S.data.contacts.find(x=>x.id===id);if(c){c.heat=h;scheduleSave();render();}}
-
 function delContact(id){
   if(!confirm('Bu kişiyi kalıcı olarak silmek istiyor musunuz?'))return;
-
-  const props = S.data.properties.filter(p => p.ownerId === id);
-  if(props.length > 0) {
-    if(confirm('Bu kişiye ait ' + props.length + ' adet mülk bulundu. Mülkleri de sistemden silelim mi?\n\n(Tamam = Mülkleri de sil, İptal = Mülkleri sahipsiz bırakarak sakla)')) {
-      S.data.properties = S.data.properties.filter(p => p.ownerId !== id);
-    } else {
-      S.data.properties.forEach(p => { if(p.ownerId === id) p.ownerId = ''; });
-    }
+  const props=S.data.properties.filter(p=>p.ownerId===id);
+  if(props.length>0){
+    if(confirm(`Bu kişiye ait ${props.length} mülk var. Mülkleri de silelim mi?`))S.data.properties=S.data.properties.filter(p=>p.ownerId!==id);
+    else S.data.properties.forEach(p=>{if(p.ownerId===id)p.ownerId='';});
   }
-
   S.data.contacts=S.data.contacts.filter(x=>x.id!==id);scheduleSave();toast('Silindi','success');back();
 }
-
-// BUG FIX: Paremetreyi go objesine ekleyerek gönderdik
 function editContact(id){
   const c=S.data.contacts.find(x=>x.id===id);if(!c)return;
-  go('contact-form', {form:{...c},editId:id});
+  S.params={form:{...c},editId:id};go('contact-form');
 }
-function addAptFor(id){
-  go('appointment-form', {form:{contactId:id,date:today(),time:'10:00'},editId:null});
-}
+function addAptFor(id){S.params={form:{contactId:id,date:today(),time:'10:00'},editId:null};go('appointment-form');}
 function waOpen(num,msg){window.open(`https://wa.me/90${num}${msg?'?text='+encodeURIComponent(msg):''}`, '_blank');}
 
 /* ====== CONTACT FORM ====== */
@@ -675,61 +605,27 @@ function buildContactForm(){
   const isEdit=!!S.params.editId;
   const t=f.type||'buyer';
   const heat=f.heat||'warm';
-
   return `<div class="form-screen">${buildHeader(isEdit?'Kişiyi Düzenle':'Yeni Kişi',true)}
     <div class="form-body">
-
       <div class="form-group"><label class="form-label">Müşteri Türü *</label>
         <div class="type-grid">
           <div class="type-opt ${t==='buyer'?'sel-buyer':''}" onclick="setF('type','buyer',true)">👤 Alıcı</div>
           <div class="type-opt ${t==='seller'?'sel-seller':''}" onclick="setF('type','seller',true)">🏷️ Satıcı</div>
         </div>
       </div>
-
-      <div class="form-group"><label class="form-label">Ad Soyad *</label>
-        <input class="form-input" type="text" placeholder="Ahmet Yılmaz" value="${esc(f.name||'')}" oninput="setF('name',this.value)">
-      </div>
-
-      <div class="form-group"><label class="form-label">Telefon *</label>
-        <input class="form-input" type="tel" placeholder="05XX XXX XX XX" value="${esc(f.phone||'')}" oninput="setF('phone',this.value)">
-      </div>
-
-      <div class="form-group"><label class="form-label">E-posta</label>
-        <input class="form-input" type="email" placeholder="ornek@mail.com" value="${esc(f.email||'')}" oninput="setF('email',this.value)">
-      </div>
-
-      <div class="form-group"><label class="form-label">${t==='seller'?'Satış Fiyatı (₺)':'Bütçe (₺)'}</label>
-        <input class="form-input" type="text" placeholder="2500000" value="${esc(f.budget||'')}" oninput="setF('budget',this.value)">
-      </div>
-
-      <div class="form-group"><label class="form-label">Mülk Türü</label>
-        <select class="form-input" onchange="setF('propType',this.value)">
-          <option value="">Seçiniz</option>
-          ${PROP_TYPES.map(p=>`<option value="${p}" ${f.propType===p?'selected':''}>${p}</option>`).join('')}
-        </select>
-      </div>
-
+      <div class="form-group"><label class="form-label">Ad Soyad *</label><input class="form-input" type="text" placeholder="Ahmet Yılmaz" value="${esc(f.name||'')}" oninput="setF('name',this.value)"></div>
+      <div class="form-group"><label class="form-label">Telefon *</label><input class="form-input" type="tel" placeholder="05XX XXX XX XX" value="${esc(f.phone||'')}" oninput="setF('phone',this.value)"></div>
+      <div class="form-group"><label class="form-label">E-posta</label><input class="form-input" type="email" placeholder="ornek@mail.com" value="${esc(f.email||'')}" oninput="setF('email',this.value)"></div>
+      <div class="form-group"><label class="form-label">${t==='seller'?'Satış Fiyatı (₺)':'Bütçe (₺)'}</label><input class="form-input" type="text" placeholder="2500000" value="${esc(f.budget||'')}" oninput="setF('budget',this.value)"></div>
+      <div class="form-group"><label class="form-label">Mülk Türü</label><select class="form-input" onchange="setF('propType',this.value)"><option value="">Seçiniz</option>${PROP_TYPES.map(p=>`<option value="${p}" ${f.propType===p?'selected':''}>${p}</option>`).join('')}</select></div>
       <div class="row2">
-        <div class="form-group"><label class="form-label">Semt / İlçe</label>
-          <input class="form-input" type="text" placeholder="Karşıyaka" value="${esc(f.district||'')}" oninput="setF('district',this.value)">
-        </div>
-        <div class="form-group"><label class="form-label">Oda</label>
-          <select class="form-input" onchange="setF('rooms',this.value)">
-            <option value="">-</option>
-            ${ROOMS.map(r=>`<option value="${r}" ${f.rooms===r?'selected':''}>${r}</option>`).join('')}
-          </select>
-        </div>
+        <div class="form-group"><label class="form-label">Semt / İlçe</label><input class="form-input" type="text" placeholder="Karşıyaka" value="${esc(f.district||'')}" oninput="setF('district',this.value)"></div>
+        <div class="form-group"><label class="form-label">Oda</label><select class="form-input" onchange="setF('rooms',this.value)"><option value="">-</option>${ROOMS.map(r=>`<option value="${r}" ${f.rooms===r?'selected':''}>${r}</option>`).join('')}</select></div>
       </div>
-
       <div class="row2">
-        <div class="form-group"><label class="form-label">m²</label>
-          <input class="form-input" type="number" placeholder="90" value="${esc(f.sqm||'')}" oninput="setF('sqm',this.value)">
-        </div>
-        <div class="form-group"><label class="form-label">Komisyon (₺)</label>
-          <input class="form-input" type="text" placeholder="75000" value="${esc(f.commission||'')}" oninput="setF('commission',this.value)">
-        </div>
+        <div class="form-group"><label class="form-label">m²</label><input class="form-input" type="number" placeholder="90" value="${esc(f.sqm||'')}" oninput="setF('sqm',this.value)"></div>
+        <div class="form-group"><label class="form-label">Komisyon (₺)</label><input class="form-input" type="text" placeholder="75000" value="${esc(f.commission||'')}" oninput="setF('commission',this.value)"></div>
       </div>
-
       <div class="form-group"><label class="form-label">Müşteri Sıcaklığı</label>
         <div class="type-grid" style="grid-template-columns:1fr 1fr 1fr">
           <div class="type-opt ${heat==='hot'?'sel-hot':''}" onclick="setF('heat','hot',true)">🔴 Sıcak</div>
@@ -737,11 +633,7 @@ function buildContactForm(){
           <div class="type-opt ${heat==='cold'?'sel-cold':''}" onclick="setF('heat','cold',true)">🔵 Soğuk</div>
         </div>
       </div>
-
-      <div class="form-group"><label class="form-label">Notlar</label>
-        <textarea class="form-input" rows="3" placeholder="Özel istekler, notlar..." oninput="setF('notes',this.value)">${esc(f.notes||'')}</textarea>
-      </div>
-
+      <div class="form-group"><label class="form-label">Notlar</label><textarea class="form-input" rows="3" placeholder="Özel istekler, notlar..." oninput="setF('notes',this.value)">${esc(f.notes||'')}</textarea></div>
       <button class="btn-primary" onclick="saveContact()">${isEdit?'✅ Güncelle':'💾 Kaydet'}</button>
       ${isEdit?`<button class="btn-danger" onclick="delContactFromForm('${S.params.editId}')">🗑️ Bu Kişiyi Sil</button>`:''}
     </div>
@@ -750,20 +642,13 @@ function buildContactForm(){
 
 function delContactFromForm(id){
   if(!confirm('Bu kişiyi kalıcı olarak silmek istiyor musunuz?'))return;
-
-  const props = S.data.properties.filter(p => p.ownerId === id);
-  if(props.length > 0) {
-    if(confirm('Bu kişiye ait ' + props.length + ' adet mülk bulundu. Mülkleri de sistemden silelim mi?\n\n(Tamam = Mülkleri de sil, İptal = Mülkleri sahipsiz bırakarak sakla)')) {
-      S.data.properties = S.data.properties.filter(p => p.ownerId !== id);
-    } else {
-      S.data.properties.forEach(p => { if(p.ownerId === id) p.ownerId = ''; });
-    }
+  const props=S.data.properties.filter(p=>p.ownerId===id);
+  if(props.length>0){
+    if(confirm(`Bu kişiye ait ${props.length} mülk var. Mülkleri de silelim mi?`))S.data.properties=S.data.properties.filter(p=>p.ownerId!==id);
+    else S.data.properties.forEach(p=>{if(p.ownerId===id)p.ownerId='';});
   }
-
   S.data.contacts=S.data.contacts.filter(x=>x.id!==id);
-  scheduleSave();toast('Silindi','success');
-  S.history.pop();
-  back();
+  scheduleSave();toast('Silindi','success');S.history.pop();back();
 }
 
 function saveContact(){
@@ -781,18 +666,15 @@ function saveContact(){
   scheduleSave();S.params={};back();
 }
 
-/* ====== YENİ: PROPERTIES VE FİLTRELEME ====== */
+/* ====== PROPERTIES ====== */
 function buildProperties(){
-  let props = S.data.properties || [];
-  if(S.filter.propObj === 'portfolio') props = props.filter(p => p.isPortfolio);
-
+  let props=S.data.properties||[];
+  if(S.filter.propObj==='portfolio')props=props.filter(p=>p.isPortfolio);
   const allIds=props.map(p=>p.id);
   const allSelected=allIds.length>0&&allIds.every(id=>S.selectedPropIds.includes(id));
-
   const headerRight=S.propSelectMode
-    ?`<button class="header-action" onclick="selectAllPropsVisible()" title="${allSelected?'Seçimi kaldır':'Tümünü seç'}">${allSelected?'☑':'☐'}</button><button class="header-action" style="font-size:14px" onclick="togglePropSelectMode()">İptal</button>`
-    :`<button class="header-action" title="Seçim modu" onclick="togglePropSelectMode()">☐</button>`;
-
+    ?`<button class="header-action" onclick="selectAllPropsVisible()">${allSelected?'☑':'☐'}</button><button class="header-action" style="font-size:14px" onclick="togglePropSelectMode()">İptal</button>`
+    :`<button class="header-action" onclick="togglePropSelectMode()">☐</button>`;
   return `<div class="content">${buildHeader('Mülkler',false,headerRight)}
     <div class="segment">
       <button class="seg-btn ${S.filter.propObj!=='portfolio'?'on':''}" onclick="S.filter.propObj='all';render()">Tüm Mülkler</button>
@@ -804,7 +686,7 @@ function buildProperties(){
       :props.map(p=>{
         const owner=S.data.contacts.find(x=>x.id===p.ownerId);
         const isSel=S.selectedPropIds.includes(p.id);
-        return `<div class="prop-card${isSel?' selected':''}" onclick="${S.propSelectMode?`togglePropSelect('${p.id}')`:`viewProperty('${p.id}')`}" style="${!isSel&&p.status==='sold'?'background:#f8fafc; border-color:#cbd5e1':''}">
+        return `<div class="prop-card${isSel?' selected':''}" onclick="${S.propSelectMode?`togglePropSelect('${p.id}')`:`go('property-detail',{id:'${p.id}'})`}" style="${!isSel&&p.status==='sold'?'background:#f8fafc;border-color:#cbd5e1':''}">
           <div style="display:flex;justify-content:space-between;align-items:flex-start">
             <div style="display:flex;align-items:flex-start;gap:10px">
               ${S.propSelectMode?`<div class="multi-checkbox${isSel?' checked':''}">${isSel?'<svg width="12" height="12" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg>':''}</div>`:''}
@@ -813,73 +695,66 @@ function buildProperties(){
             <span class="badge badge-${p.status||'avail'}">${{avail:'Satışta',reserved:'Rezerve',sold:'Satıldı'}[p.status||'avail']}</span>
           </div>
           <div class="prop-meta">${p.isPortfolio?`<span style="color:var(--amber);font-weight:700">🌟 Yetkili Portföy</span><br>`:''}${p.adNumber?`<span style="color:var(--blue);font-weight:600">İlan No: ${esc(p.adNumber)}</span><br>`:''}${[p.propType,p.district,p.rooms,p.sqm?p.sqm+'m²':''].filter(Boolean).join(' · ')}</div>
-          ${owner?`<div class="prop-meta" style="margin-top:8px; font-weight:700; color:var(--text); padding:4px 8px; background:${p.status==='sold'?'#e2e8f0':'var(--blue-light)'}; border-radius:6px; display:inline-block">👤 Sahibi: ${esc(owner.name)}</div>`:`<div class="prop-meta" style="margin-top:8px; font-style:italic; color:var(--muted)">Sahipsiz Mülk</div>`}
-          ${p.price?`<div class="prop-price" style="margin-top:8px; ${p.status==='sold'?'color:var(--muted)':''}">${numFmt(p.price)}</div>`:''}
+          ${owner?`<div class="prop-meta" style="margin-top:8px;font-weight:700;color:var(--text);padding:4px 8px;background:${p.status==='sold'?'#e2e8f0':'var(--blue-light)'};border-radius:6px;display:inline-block">👤 Sahibi: ${esc(owner.name)}</div>`:`<div class="prop-meta" style="margin-top:8px;font-style:italic;color:var(--muted)">Sahipsiz Mülk</div>`}
+          ${p.price?`<div class="prop-price" style="${p.status==='sold'?'color:var(--muted)':''}">${numFmt(p.price)}</div>`:''}
         </div>`;}).join('')}
     </div>
     ${!S.propSelectMode?`<button class="fab" onclick="go('property-form',{editId:null})">+</button>`:''}
   </div>`;
 }
 
-// BUG FIX: Paremetreyi go objesine ekleyerek gönderdik
-function viewProperty(id){
-  go('property-detail', {id:id});
-}
-
-/* ====== YENİ: PROPERTY DETAIL & ARAYANLAR HAVUZU ====== */
+/* ====== PROPERTY DETAIL ====== */
+/* ✅ BUG FIX: go() çağrılarında params artık doğrudan go()'ya geçiliyor,
+   S.params'a önceden yazılmıyor — böylece go() içindeki S.params={} sıfırlaması sorunu ortadan kalktı */
 function buildPropertyDetail(){
   const p=S.data.properties.find(x=>x.id===S.params.id);
-  if(!p){ setTimeout(back, 0); return `<div style="padding:40px;text-align:center;color:var(--muted)">Mülk bulunamadı.</div>`; }
-  
+  if(!p){setTimeout(back,0);return `<div style="padding:40px;text-align:center;color:var(--muted)">Yükleniyor...</div>`;}
   const owner=S.data.contacts.find(x=>x.id===p.ownerId);
   const leads=S.data.contacts.filter(x=>x.interestedIn===p.id);
-
   return `<div class="content">${buildHeader('Mülk Detayı',true,`<button class="header-action" onclick="editProperty('${p.id}')">✏️</button>`)}
-    <div class="detail-hero" style="${p.isPortfolio?'background:linear-gradient(135deg, var(--blue), var(--blue-mid))':''}">
+    <div class="detail-hero" style="${p.isPortfolio?'background:linear-gradient(135deg,var(--blue),var(--blue-mid))':''}">
       <div style="font-size:28px;font-weight:800;margin-bottom:4px">${numFmt(p.price)||'-'}</div>
-      <div style="font-size:16px;opacity:0.9">${esc(p.title||p.propType||'Mülk')}</div>
-      <div style="font-size:14px;opacity:0.7;margin-top:4px">${[p.district,p.rooms,p.sqm?p.sqm+'m²':''].filter(Boolean).join(' · ')}</div>
+      <div style="font-size:16px;opacity:.9">${esc(p.title||p.propType||'Mülk')}</div>
+      <div style="font-size:14px;opacity:.7;margin-top:4px">${[p.district,p.rooms,p.sqm?p.sqm+'m²':''].filter(Boolean).join(' · ')}</div>
       ${p.isPortfolio?`<div style="margin-top:12px"><span style="background:#fff;color:var(--blue);padding:4px 10px;border-radius:12px;font-size:12px;font-weight:700">🌟 Benim İlanım (Yetkili)</span></div>`:''}
     </div>
     <div class="detail-body">
       ${p.link?`<button class="wa-btn" style="background:var(--blue)" onclick="window.open('${esc(p.link)}','_blank')">🔗 İlan Linkine Git</button>`:''}
-      
       <div class="detail-section-card">
         <div class="detail-section-header">Mülk Bilgileri</div>
         ${p.adNumber?`<div class="detail-row"><span class="detail-row-label">İlan No</span><span class="detail-row-val">${esc(p.adNumber)}</span></div>`:''}
         <div class="detail-row"><span class="detail-row-label">Durum</span><span class="detail-row-val">${{avail:'Satışta',reserved:'Rezerve',sold:'Satıldı'}[p.status||'avail']}</span></div>
         <div class="detail-row"><span class="detail-row-label">Kayıt Tarihi</span><span class="detail-row-val">${esc(p.createdAt||'-')}</span></div>
       </div>
-
       <div class="detail-section-card">
         <div class="detail-section-header">Mülk Sahibi (Satıcı)</div>
-        ${owner?`<div class="contact-row" onclick="go('contact-detail',{id:'${owner.id}'})"><div class="avatar av-seller">${initials(owner.name)}</div><div class="contact-info"><div class="contact-name">${esc(owner.name)}</div><div class="contact-meta">${esc(owner.phone||'-')}</div></div></div>`:`<div style="padding:16px;font-size:14px;color:var(--muted);text-align:center">Satıcı atanmamış veya silinmiş.</div>`}
+        ${owner
+          ?`<div class="contact-row" onclick="go('contact-detail',{id:'${owner.id}'})"><div class="avatar av-seller">${initials(owner.name)}</div><div class="contact-info"><div class="contact-name">${esc(owner.name)}</div><div class="contact-meta">${esc(owner.phone||'-')}</div></div></div>`
+          :`<div style="padding:16px;font-size:14px;color:var(--muted);text-align:center">Satıcı atanmamış.</div>`}
       </div>
-
       ${p.notes?`<div class="detail-section-card"><div class="detail-section-header">Notlar</div><div class="detail-notes">${esc(p.notes)}</div></div>`:''}
-
       <div class="detail-section-card" style="border-color:var(--blue-mid)">
         <div class="detail-section-header" style="background:var(--blue-light);color:var(--blue)">Bu İlanla İlgilenenler (${leads.length})</div>
-        ${leads.length===0?`<div style="padding:20px;text-align:center;font-size:13px;color:var(--muted)">Henüz ilgilenen bir alıcı eklenmemiş.</div>`
-        :leads.map(l=>`<div class="contact-row" onclick="go('contact-detail',{id:'${l.id}'})"><div class="avatar av-buyer">${initials(l.name)}</div><div class="contact-info"><div class="contact-name">${esc(l.name)}</div><div class="contact-meta">${numFmt(l.budget)||'-'} · ${esc(l.phone||'')}</div></div><span class="badge badge-${l.heat||'warm'}">${{hot:'🔴',warm:'🟡',cold:'🔵'}[l.heat||'warm']}</span></div>`).join('')}
-        <button class="btn-secondary" style="width:100%;border:none;border-top:1px solid var(--border);border-radius:0 0 14px 14px;color:var(--blue);background:#fff" onclick="addLeadFor('${p.id}')">➕ İlgilenen / Arayan Ekle</button>
+        ${leads.length===0
+          ?`<div style="padding:20px;text-align:center;font-size:13px;color:var(--muted)">Henüz ilgilenen alıcı eklenmemiş.</div>`
+          :leads.map(l=>`<div class="contact-row" onclick="go('contact-detail',{id:'${l.id}'})"><div class="avatar av-buyer">${initials(l.name)}</div><div class="contact-info"><div class="contact-name">${esc(l.name)}</div><div class="contact-meta">${numFmt(l.budget)||'-'} · ${esc(l.phone||'')}</div></div><span class="badge badge-${l.heat||'warm'}">${{hot:'🔴',warm:'🟡',cold:'🔵'}[l.heat||'warm']}</span></div>`).join('')}
+        <button style="width:100%;padding:14px;border:none;border-top:1px solid var(--border);border-radius:0 0 14px 14px;color:var(--blue);background:#fff;font-size:14px;font-weight:700;cursor:pointer" onclick="addLeadFor('${p.id}')">➕ İlgilenen / Arayan Alıcı Ekle</button>
       </div>
     </div>
   </div>`;
 }
 
-// BUG FIX: Paremetreyi go objesine ekleyerek gönderdik
+/* ✅ BUG FIX: S.params'a yazmak yerine go()'ya params geçiyoruz */
 function editProperty(id){
   const p=S.data.properties.find(x=>x.id===id);
   if(!p)return;
-  go('property-form', {form:{...p},editId:id});
+  go('property-form',{form:{...p},editId:id}); // ← düzeltildi
 }
 
-// BUG FIX: Paremetreyi go objesine ekleyerek gönderdik
-function addLeadFor(id){
-  const p=S.data.properties.find(x=>x.id===id);
+function addLeadFor(propId){
+  const p=S.data.properties.find(x=>x.id===propId);
   if(!p)return;
-  go('contact-form', {form:{type:'buyer',interestedIn:p.id,district:p.district||'',propType:p.propType||'',budget:p.price||''},editId:null});
+  go('contact-form',{form:{type:'buyer',interestedIn:p.id,district:p.district||'',propType:p.propType||''},editId:null});
 }
 
 function buildPropertyForm(){
@@ -890,12 +765,11 @@ function buildPropertyForm(){
   return `<div class="form-screen">${buildHeader(isEdit?'Mülkü Düzenle':'Yeni Mülk',true)}
     <div class="form-body">
       <div class="form-group">
-        <label style="display:flex;align-items:center;gap:10px;padding:14px;background:#fff;border:2px solid ${f.isPortfolio?'var(--blue)':'var(--border)'};border-radius:12px;cursor:pointer;transition:all 0.2s">
+        <label style="display:flex;align-items:center;gap:10px;padding:14px;background:#fff;border:2px solid ${f.isPortfolio?'var(--blue)':'var(--border)'};border-radius:12px;cursor:pointer">
           <input type="checkbox" style="width:20px;height:20px;accent-color:var(--blue)" ${f.isPortfolio?'checked':''} onchange="setF('isPortfolio',this.checked,true)">
           <span style="font-size:15px;font-weight:700;color:${f.isPortfolio?'var(--blue)':'var(--text)'}">🌟 Benim Yetkili Portföyüm</span>
         </label>
       </div>
-
       <div class="form-group"><label class="form-label">Mülk Başlığı</label><input class="form-input" type="text" placeholder="Karşıyaka 3+1 Daire" value="${esc(f.title||'')}" oninput="setF('title',this.value)"></div>
       <div class="form-group"><label class="form-label">İlan Numarası</label><input class="form-input" type="text" placeholder="123456789" value="${esc(f.adNumber||'')}" oninput="setF('adNumber',this.value)"></div>
       <div class="form-group"><label class="form-label">İlan Linki</label><input class="form-input" type="url" placeholder="https://sahibinden.com/..." value="${esc(f.link||'')}" oninput="setF('link',this.value)"></div>
@@ -938,11 +812,9 @@ function saveProperty(){
 }
 function delProperty(id){
   if(!confirm('Bu mülkü kalıcı olarak silmek istiyor musunuz?'))return;
-  S.data.contacts.forEach(c => { if(c.interestedIn === id) c.interestedIn = ''; });
+  S.data.contacts.forEach(c=>{if(c.interestedIn===id)c.interestedIn='';});
   S.data.properties=S.data.properties.filter(x=>x.id!==id);
-  scheduleSave();toast('Silindi','success');
-  S.history.pop();
-  back();
+  scheduleSave();toast('Silindi','success');S.history.pop();back();
 }
 
 /* ====== MESSAGES ====== */
@@ -1060,7 +932,7 @@ function buildAppointments(){
         </div>`;}).join('')}
       ${done.length>0?`<div style="font-size:13px;font-weight:600;color:var(--muted);padding:12px 0 8px;opacity:.7">Tamamlananlar</div>${done.map(a=>{const c=S.data.contacts.find(x=>x.id===a.contactId);const d=new Date(a.date+'T12:00:00');return `<div class="apt-card" style="opacity:.5"><div class="apt-date"><span class="apt-day">${d.getDate()}</span><span class="apt-month">${MONTHS_TR[d.getMonth()]}</span></div><div class="apt-info"><div class="apt-contact">${esc(c?c.name:'')}</div><div class="apt-time">⏰ ${esc(a.time||'')}</div></div></div>`;}).join('')}`:''}
     </div>
-    <button class="fab" onclick="addAptFor(null)">+</button>
+    <button class="fab" onclick="go('appointment-form',{form:{date:'${today()}',time:'10:00'},editId:null})">+</button>
   </div>`;
 }
 
@@ -1107,56 +979,68 @@ function buildMatching(){
   const props=S.data.properties.filter(x=>x.status!=='sold');
   const sellers=S.data.contacts.filter(x=>x.type==='seller');
   const matches=[];
-  
+
   buyers.forEach(b=>{
     props.forEach(p=>{
-      let score=0;
-      let tags=[];
+      let score=0;let tags=[];
 
-      if(b.district && p.district && b.district.trim().toLowerCase() === p.district.trim().toLowerCase()){score += 40; tags.push('📍 Semt');}
-      if(b.propType && p.propType && b.propType === p.propType){score += 30; tags.push('🏠 Tür');}
-      if(b.budget && p.price){
-        const bd=parseFloat(b.budget), pd=parseFloat(p.price);
-        if(!isNaN(bd) && !isNaN(pd) && pd <= (bd * 1.15)){score += 20; tags.push('💰 Bütçe');}
+      // Semt — 40 puan
+      if(b.district&&p.district&&b.district.trim().toLowerCase()===p.district.trim().toLowerCase()){score+=40;tags.push('📍 Semt');}
+
+      // Mülk türü — 30 puan
+      if(b.propType&&p.propType&&b.propType===p.propType){score+=30;tags.push('🏠 Tür');}
+
+      // Bütçe — 20 puan, AYRICA bütçe aşımı varsa doğrudan eleme
+      if(b.budget&&p.price){
+        const bd=parseFloat(b.budget),pd=parseFloat(p.price);
+        if(!isNaN(bd)&&!isNaN(pd)){
+          if(pd>bd*1.15){score=-999;} // bütçe %15'ten fazla aşılıyorsa eşleşme yok
+          else{score+=20;tags.push('💰 Bütçe');}
+        }
       }
-      if(b.rooms && p.rooms && b.rooms === p.rooms){score += 10; tags.push('🚪 Oda');}
 
-      if(score >= 50) matches.push({buyer:b, prop:p, owner:sellers.find(x=>x.id===p.ownerId), score: score, tags: tags});
+      // Oda — 10 puan
+      if(b.rooms&&p.rooms&&b.rooms===p.rooms){score+=10;tags.push('🚪 Oda');}
+
+      // En az 2 kriter eşleşmeli ve toplam %50 üzeri olmalı
+      if(score>=50&&tags.length>=2)matches.push({buyer:b,prop:p,owner:sellers.find(x=>x.id===p.ownerId),score,tags});
     });
   });
 
-  matches.sort((a,b) => b.score - a.score);
+  matches.sort((a,b)=>b.score-a.score);
 
   return `<div class="content">${buildHeader('Akıllı Eşleştirme',true)}
     <div style="padding:14px 16px">
-      ${matches.length===0?`<div class="empty"><div class="empty-icon">🔗</div><div class="empty-title">Eşleşme bulunamadı</div><div class="empty-sub">Alıcı ve mülk verilerini (semt, tür, bütçe) doldurun. Sadece %50 ve üzeri uyanlar listelenir.</div></div>`
-      :matches.map(m=>{
-        let color = 'var(--green)';
-        if(m.score <= 60) color = 'var(--amber)';
-        return `<div class="match-card">
-          <div class="match-header" style="align-items:center; border-bottom:1px solid var(--border); padding-bottom:10px; margin-bottom:10px;">
-            <div style="font-size:24px; font-weight:800; color:${color}">%${m.score}</div>
-            <div style="display:flex; gap:4px;">${m.tags.map(t=>`<span class="badge" style="background:#f1f5f9;color:var(--muted)">${t}</span>`).join('')}</div>
-          </div>
-          <div style="display:flex; justify-content:space-between; margin-bottom:10px">
-            <div>
-              <div style="font-size:12px;color:var(--muted);margin-bottom:2px">👤 Alıcı</div>
-              <div style="font-weight:700;font-size:15px">${esc(m.buyer.name)}</div>
-              <div style="font-size:13px;color:var(--muted)">${numFmt(m.buyer.budget)||'-'} · ${esc(m.buyer.district||'-')}</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:14px;padding:10px 12px;background:#f8fafc;border-radius:10px;border:1px solid var(--border)">
+        Eşleşme için <b>semt + mülk türü</b> gibi en az 2 kriterin uyuşması ve bütçenin aşılmaması gerekir.
+      </div>
+      ${matches.length===0
+        ?`<div class="empty"><div class="empty-icon">🔗</div><div class="empty-title">Eşleşme bulunamadı</div><div class="empty-sub">Alıcı ve mülk bilgilerini (semt, tür, bütçe) doldurduğunuzda eşleştirme yapılır.</div></div>`
+        :matches.map(m=>{
+          const color=m.score>=80?'var(--green)':m.score>=60?'var(--amber)':'var(--coral)';
+          return `<div class="match-card">
+            <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:10px;margin-bottom:10px">
+              <div style="font-size:28px;font-weight:800;color:${color}">%${m.score}</div>
+              <div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end">${m.tags.map(t=>`<span class="badge" style="background:#f1f5f9;color:var(--muted)">${t}</span>`).join('')}</div>
             </div>
-            <div style="text-align:right">
-              <div style="font-size:12px;color:var(--muted);margin-bottom:2px">🏘️ Mülk</div>
-              <div style="font-weight:700;font-size:15px">${esc(m.prop.title||m.prop.propType||'-')}</div>
-              <div style="font-size:13px;color:var(--muted)">${numFmt(m.prop.price)||'-'}</div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:10px">
+              <div>
+                <div style="font-size:12px;color:var(--muted);margin-bottom:2px">👤 Alıcı</div>
+                <div style="font-weight:700;font-size:15px">${esc(m.buyer.name)}</div>
+                <div style="font-size:13px;color:var(--muted)">${numFmt(m.buyer.budget)||'Bütçe yok'} · ${esc(m.buyer.district||'Semt yok')}</div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-size:12px;color:var(--muted);margin-bottom:2px">🏘️ Mülk</div>
+                <div style="font-weight:700;font-size:15px">${esc(m.prop.title||m.prop.propType||'-')}</div>
+                <div style="font-size:13px;color:var(--muted)">${numFmt(m.prop.price)||'-'}</div>
+              </div>
             </div>
-          </div>
-          ${m.owner?`<div style="font-size:13px;color:var(--muted);margin-bottom:10px">🏷️ Satıcı: ${esc(m.owner.name)}</div>`:''}
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            ${m.buyer.phone?`<button class="btn-small btn-small-green" onclick="waOpen('${fmtPhone(m.buyer.phone)}','Merhaba ${esc(m.buyer.name.split(' ')[0])}, aradığınız kriterlere %${m.score} oranında uyan bir portföyümüz var. İncelemek ister misiniz?')">💬 Alıcıya Öner</button>`:''}
-            ${m.owner?.phone?`<button class="btn-small btn-small-blue" onclick="waOpen('${fmtPhone(m.owner.phone)}','Merhaba ${esc(m.owner.name.split(' ')[0])}, ${esc(m.prop.title)} mülkünüzle ilgilenen ciddi bir alıcımız var.')">💬 Satıcıya Bildir</button>`:''}
-          </div>
-        </div>`;
-      }).join('')}
+            ${m.owner?`<div style="font-size:13px;color:var(--muted);margin-bottom:10px">🏷️ Satıcı: ${esc(m.owner.name)}</div>`:''}
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              ${m.buyer.phone?`<button class="btn-small btn-small-green" onclick="waOpen('${fmtPhone(m.buyer.phone)}','Merhaba ${esc(m.buyer.name.split(' ')[0])}, aradığınız kriterlere %${m.score} uyan bir portföyümüz var. İncelemek ister misiniz?')">💬 Alıcıya Öner</button>`:''}
+              ${m.owner?.phone?`<button class="btn-small btn-small-blue" onclick="waOpen('${fmtPhone(m.owner.phone)}','Merhaba ${esc(m.owner.name.split(' ')[0])}, mülkünüzle ilgilenen ciddi bir alıcımız var.')">💬 Satıcıya Bildir</button>`:''}
+            </div>
+          </div>`;}).join('')}
     </div>
   </div>`;
 }
