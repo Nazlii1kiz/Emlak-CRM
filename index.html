@@ -198,7 +198,7 @@ const FILE_NAME='emlak_crm_data.json';
 const MONTHS_TR=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
 const STATUS_LABELS={new:'Yeni',contacted:'Görüşüldü',offer:'Teklif Verildi',closed:'Kapandı'};
 const HEAT_LABELS={hot:'🔴 Sıcak',warm:'🟡 Ilık',cold:'🔵 Soğuk'};
-const PROP_TYPES=['Daire','Villa','Arsa','İşyeri','Yazlık','Müstakil Ev','Ofis'];
+const PROP_TYPES=['Daire','Dublex','Villa','Arsa','Tarla','İşyeri','Yazlık','Müstakil Ev','Ofis','Fabrika','Depo'];
 const ROOMS=['1+0','1+1','2+1','3+1','3+2','4+1','4+2','5+1','5+2','6+'];
 
 const WA_SVG = `<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.785 23.542l4.61-1.478A11.944 11.944 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818c-2.151 0-4.152-.64-5.824-1.74l-.418-.248-4.33 1.388 1.405-4.22-.272-.432A9.808 9.808 0 0 1 2.182 12c0-5.423 4.395-9.818 9.818-9.818 5.422 0 9.818 4.395 9.818 9.818 0 5.422-4.396 9.818-9.818 9.818z"/></svg>`;
@@ -211,7 +211,7 @@ let S={
   search:'',selectMode:false,selectedIds:[],
   propSelectMode:false,selectedPropIds:[],
   imgCache:{}, 
-  sendTplId:null, sendTplSelected:[], waQueueMode:false, // 💬 YENİ: Spam korumalı gönderim için
+  sendTplId:null, sendTplSelected:[], waQueueMode:false,
   data:{
     contacts:[],properties:[],appointments:[],
     templates:[
@@ -237,7 +237,6 @@ const numFmt=n=>{if(!n)return '-';const v=parseFloat(String(n).replace(/[^0-9.]/
 
 function toast(msg,type='info'){S.toast={msg,type};render();setTimeout(()=>{S.toast=null;render();},3000);}
 
-/* 🛠️ YENİ HAFIZA (AMNAZİ) ÇÖZÜMÜ: Geçmişe ID ve parametreleri de yazıyoruz */
 function go(screen,params={}){
   if(S.screen!=='loading')S.history.push({s:S.screen, p:JSON.parse(JSON.stringify(S.params))});
   S.screen=screen;
@@ -377,7 +376,7 @@ function bulkDelete(){
   S.selectedIds.forEach(id => { propsToDelete += S.data.properties.filter(p => p.ownerId === id).length; });
 
   if(propsToDelete > 0) {
-    if(confirm(`Seçilen kişilere ait toplam ${propsToDelete} adet mülk bulundu. Mülkleri de silelim mi?\n\n(Tamam = Mülkleri de sil, İptal = Mülkleri sahipsiz bırakarak sakla)`)) {
+    if(confirm(`Seçilen kişilere ait toplam ${propsToDelete} adet mülk bulundu. Mülkleri de silelim mi?`)) {
       S.data.properties = S.data.properties.filter(p => !S.selectedIds.includes(p.ownerId));
     } else {
       S.data.properties.forEach(p => { if(S.selectedIds.includes(p.ownerId)) p.ownerId = ''; });
@@ -501,7 +500,7 @@ function buildBulkSheet(){
 function buildPropBulkSheet(){
   return `<div class="overlay" onclick="S.showPropBulkSheet=false;render()"><div class="bottom-sheet" onclick="event.stopPropagation()"><div class="sheet-handle"></div><div style="font-size:16px;font-weight:700;margin-bottom:16px">${S.selectedPropIds.length} mülk için güncelle</div>
     <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:6px">Durum değiştir</div>
-    ${Object.entries({avail:'Satışta',reserved:'Rezerve',sold:'Satıldı'}).map(([k,v])=>`<div class="status-option" onclick="propBulkSetStatus('${k}')"><span class="badge badge-${k}">${v}</span></div>`).join('')}
+    ${Object.entries({avail:'Satışta',reserved:'Kapora Alındı',sold:'Satıldı'}).map(([k,v])=>`<div class="status-option" onclick="propBulkSetStatus('${k}')"><span class="badge badge-${k}">${v}</span></div>`).join('')}
   </div></div>`;
 }
 
@@ -616,11 +615,13 @@ function buildContactDetail(){
       <div class="detail-section-card">
         <div class="detail-section-header">Kişisel Bilgiler</div>
         ${c.email?`<div class="detail-row"><span class="detail-row-label">E-posta</span><span class="detail-row-val">${esc(c.email)}</span></div>`:''}
+        ${c.transType?`<div class="detail-row"><span class="detail-row-label">İşlem Türü</span><span class="detail-row-val">${esc(c.transType)}</span></div>`:''}
         <div class="detail-row"><span class="detail-row-label">Bütçe / Fiyat</span><span class="detail-row-val">${numFmt(c.budget)||'-'}</span></div>
         <div class="detail-row"><span class="detail-row-label">Mülk Türü</span><span class="detail-row-val">${esc(c.propType||'-')}</span></div>
         <div class="detail-row"><span class="detail-row-label">Semt / İlçe</span><span class="detail-row-val">${esc(c.district||'-')}</span></div>
         ${c.rooms?`<div class="detail-row"><span class="detail-row-label">Oda</span><span class="detail-row-val">${esc(c.rooms)}</span></div>`:''}
         ${c.sqm?`<div class="detail-row"><span class="detail-row-label">Alan</span><span class="detail-row-val">${esc(c.sqm)} m²</span></div>`:''}
+        ${c.age?`<div class="detail-row"><span class="detail-row-label">Bina Yaşı</span><span class="detail-row-val">${esc(c.age)} Yaş</span></div>`:''}
         ${c.commission?`<div class="detail-row"><span class="detail-row-label">Komisyon</span><span class="detail-row-val">${numFmt(c.commission)}</span></div>`:''}
         <div class="detail-row"><span class="detail-row-label">Kayıt Tarihi</span><span class="detail-row-val">${esc(c.createdAt||'-')}</span></div>
       </div>
@@ -682,17 +683,27 @@ function buildContactForm(){
       <div class="form-group"><label class="form-label">Telefon *</label><input class="form-input" type="tel" placeholder="05XX XXX XX XX" value="${esc(f.phone||'')}" oninput="setF('phone',this.value)"></div>
       <div class="form-group"><label class="form-label">E-posta</label><input class="form-input" type="email" placeholder="ornek@mail.com" value="${esc(f.email||'')}" oninput="setF('email',this.value)"></div>
       <div class="form-group"><label class="form-label">${t==='seller'?'Satış Fiyatı (₺)':'Bütçe (₺)'}</label><input class="form-input" type="text" placeholder="2500000" value="${esc(f.budget||'')}" oninput="setF('budget',this.value)"></div>
-      <div class="form-group"><label class="form-label">Mülk Türü</label>
-        <select class="form-input" onchange="setF('propType',this.value)"><option value="">Seçiniz</option>${PROP_TYPES.map(p=>`<option value="${p}" ${f.propType===p?'selected':''}>${p}</option>`).join('')}</select>
+      
+      <div class="row2">
+        <div class="form-group"><label class="form-label">İşlem Türü</label>
+          <select class="form-input" onchange="setF('transType',this.value)"><option value="">Seçiniz</option>${['Satılık','Kiralık','Devren Kiralık'].map(tr=>`<option value="${tr}" ${f.transType===tr?'selected':''}>${tr}</option>`).join('')}</select>
+        </div>
+        <div class="form-group"><label class="form-label">Mülk Türü</label>
+          <select class="form-input" onchange="setF('propType',this.value)"><option value="">Seçiniz</option>${PROP_TYPES.map(p=>`<option value="${p}" ${f.propType===p?'selected':''}>${p}</option>`).join('')}</select>
+        </div>
       </div>
+
       <div class="row2">
         <div class="form-group"><label class="form-label">Semt / İlçe</label><input class="form-input" type="text" placeholder="Karşıyaka" value="${esc(f.district||'')}" oninput="setF('district',this.value)"></div>
         <div class="form-group"><label class="form-label">Oda</label><select class="form-input" onchange="setF('rooms',this.value)"><option value="">-</option>${ROOMS.map(r=>`<option value="${r}" ${f.rooms===r?'selected':''}>${r}</option>`).join('')}</select></div>
       </div>
       <div class="row2">
+        <div class="form-group"><label class="form-label">Bina Yaşı</label><input class="form-input" type="number" placeholder="Örn: 5" value="${esc(f.age||'')}" oninput="setF('age',this.value)"></div>
         <div class="form-group"><label class="form-label">m²</label><input class="form-input" type="number" placeholder="90" value="${esc(f.sqm||'')}" oninput="setF('sqm',this.value)"></div>
-        <div class="form-group"><label class="form-label">Komisyon (₺)</label><input class="form-input" type="text" placeholder="75000" value="${esc(f.commission||'')}" oninput="setF('commission',this.value)"></div>
       </div>
+      
+      <div class="form-group"><label class="form-label">Komisyon (₺)</label><input class="form-input" type="text" placeholder="75000" value="${esc(f.commission||'')}" oninput="setF('commission',this.value)"></div>
+      
       <div class="form-group"><label class="form-label">Müşteri Sıcaklığı</label>
         <div class="type-grid" style="grid-template-columns:1fr 1fr 1fr">
           <div class="type-opt ${heat==='hot'?'sel-hot':''}" onclick="setF('heat','hot',true)">🔴 Sıcak</div>
@@ -738,7 +749,7 @@ function saveContact(){
   scheduleSave();S.params={};back();
 }
 
-/* ====== YENİ: PROPERTIES VE FİLTRELEME ====== */
+/* ====== PROPERTIES VE FİLTRELEME ====== */
 function buildProperties(){
   let props = S.data.properties || [];
   if(S.filter.propObj === 'portfolio') props = props.filter(p => p.isPortfolio);
@@ -761,8 +772,8 @@ function buildProperties(){
       :props.map(p=>{
         const owner=S.data.contacts.find(x=>x.id===p.ownerId);
         const isSel=S.selectedPropIds.includes(p.id);
-        const secretBadge = p.isSecret ? `<span style="color:#8b5cf6;font-weight:700">🤫 Gizli (El Altı) Portföy</span><br>` : '';
         const portBadge = p.isPortfolio ? `<span style="color:var(--amber);font-weight:700">🌟 Yetkili Portföy</span><br>` : '';
+        const metaStr = [p.transType, p.propType, p.district, p.rooms, p.sqm?p.sqm+'m²':'', p.age?p.age+' Yaş':''].filter(Boolean).join(' · ');
 
         return `<div class="prop-card${isSel?' selected':''}" onclick="${S.propSelectMode?`togglePropSelect('${p.id}')`:`go('property-detail',{id:'${p.id}'})`}" style="${!isSel&&p.status==='sold'?'background:#f8fafc; border-color:#cbd5e1':''}">
           <div style="display:flex;justify-content:space-between;align-items:flex-start">
@@ -770,9 +781,9 @@ function buildProperties(){
               ${S.propSelectMode?`<div class="multi-checkbox${isSel?' checked':''}">${isSel?'<svg width="12" height="12" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg>':''}</div>`:''}
               <div class="prop-title" style="${p.status==='sold'?'text-decoration:line-through;color:var(--muted)':''}">${esc(p.title||p.propType||'Mülk')}</div>
             </div>
-            <span class="badge badge-${p.status||'avail'}">${{avail:'Satışta',reserved:'Rezerve',sold:'Satıldı'}[p.status||'avail']}</span>
+            <span class="badge badge-${p.status||'avail'}">${{avail:'Satışta',reserved:'Kapora Alındı',sold:'Satıldı'}[p.status||'avail']}</span>
           </div>
-          <div class="prop-meta">${secretBadge}${portBadge}${p.adNumber?`<span style="color:var(--blue);font-weight:600">İlan No: ${esc(p.adNumber)}</span><br>`:''}${[p.propType,p.district,p.rooms,p.sqm?p.sqm+'m²':''].filter(Boolean).join(' · ')}</div>
+          <div class="prop-meta">${portBadge}${p.adNumber?`<span style="color:var(--blue);font-weight:600">İlan No: ${esc(p.adNumber)}</span><br>`:''}${metaStr}</div>
           ${owner?`<div class="prop-meta" style="margin-top:8px; font-weight:700; color:var(--text); padding:4px 8px; background:${p.status==='sold'?'#e2e8f0':'var(--blue-light)'}; border-radius:6px; display:inline-block">👤 Sahibi: ${esc(owner.name)}</div>`:`<div class="prop-meta" style="margin-top:8px; font-style:italic; color:var(--muted)">Sahipsiz Mülk</div>`}
           ${p.price?`<div class="prop-price" style="margin-top:8px; ${p.status==='sold'?'color:var(--muted)':''}">${numFmt(p.price)}</div>`:''}
         </div>`;}).join('')}
@@ -781,7 +792,7 @@ function buildProperties(){
   </div>`;
 }
 
-/* ====== YENİ: FOTOĞRAF SIKIŞTIRMA VE YÜKLEME ====== */
+/* ====== FOTOĞRAF SIKIŞTIRMA VE YÜKLEME ====== */
 function compressImg(file) {
   return new Promise((resolve) => {
     const reader = new FileReader();
@@ -905,16 +916,16 @@ function buildPropertyDetail(){
   const leads=S.data.contacts.filter(x=>x.interestedIn===p.id);
 
   let bgClass = "var(--blue)";
-  if (p.isSecret) bgClass = "#8b5cf6"; 
-  else if (p.isPortfolio) bgClass = "linear-gradient(135deg, var(--blue), var(--blue-mid))"; 
+  if (p.isPortfolio) bgClass = "linear-gradient(135deg, var(--blue), var(--blue-mid))"; 
+
+  const metaStr = [p.transType, p.district, p.rooms, p.sqm?p.sqm+'m²':'', p.age?p.age+' Yaş':''].filter(Boolean).join(' · ');
 
   return `<div class="content">${buildHeader('Mülk Detayı',true,`<button class="header-action" onclick="go('property-form',{form:{...S.data.properties.find(x=>x.id==='${p.id}')},editId:'${p.id}'})">✏️</button>`)}
     <div class="detail-hero" style="background:${bgClass}">
       <div style="font-size:28px;font-weight:800;margin-bottom:4px">${numFmt(p.price)||'-'}</div>
       <div style="font-size:16px;opacity:0.9">${esc(p.title||p.propType||'Mülk')}</div>
-      <div style="font-size:14px;opacity:0.7;margin-top:4px">${[p.district,p.rooms,p.sqm?p.sqm+'m²':''].filter(Boolean).join(' · ')}</div>
-      ${p.isSecret?`<div style="margin-top:12px"><span style="background:#fff;color:#8b5cf6;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:700">🤫 Gizli Portföy</span></div>`:''}
-      ${p.isPortfolio&&!p.isSecret?`<div style="margin-top:12px"><span style="background:#fff;color:var(--blue);padding:4px 10px;border-radius:12px;font-size:12px;font-weight:700">🌟 Benim İlanım (Yetkili)</span></div>`:''}
+      <div style="font-size:14px;opacity:0.7;margin-top:4px">${metaStr}</div>
+      ${p.isPortfolio?`<div style="margin-top:12px"><span style="background:#fff;color:var(--blue);padding:4px 10px;border-radius:12px;font-size:12px;font-weight:700">🌟 Benim İlanım (Yetkili)</span></div>`:''}
     </div>
     <div class="detail-body">
       ${p.link?`<button class="wa-btn" style="background:var(--blue)" onclick="window.open('${esc(p.link)}','_blank')">🔗 İlan Linkine Git</button>`:''}
@@ -943,7 +954,7 @@ function buildPropertyDetail(){
       <div class="detail-section-card">
         <div class="detail-section-header">Mülk Bilgileri</div>
         ${p.adNumber?`<div class="detail-row"><span class="detail-row-label">İlan No</span><span class="detail-row-val">${esc(p.adNumber)}</span></div>`:''}
-        <div class="detail-row"><span class="detail-row-label">Durum</span><span class="detail-row-val">${{avail:'Satışta',reserved:'Rezerve',sold:'Satıldı'}[p.status||'avail']}</span></div>
+        <div class="detail-row"><span class="detail-row-label">Durum</span><span class="detail-row-val">${{avail:'Satışta',reserved:'Kapora Alındı',sold:'Satıldı'}[p.status||'avail']}</span></div>
         <div class="detail-row"><span class="detail-row-label">Kayıt Tarihi</span><span class="detail-row-val">${esc(p.createdAt||'-')}</span></div>
       </div>
 
@@ -958,7 +969,7 @@ function buildPropertyDetail(){
         <div class="detail-section-header" style="background:var(--blue-light);color:var(--blue)">Bu İlanla İlgilenenler (${leads.length})</div>
         ${leads.length===0?`<div style="padding:20px;text-align:center;font-size:13px;color:var(--muted)">Henüz ilgilenen bir alıcı eklenmemiş.</div>`
         :leads.map(l=>`<div class="contact-row" onclick="go('contact-detail',{id:'${l.id}'})"><div class="avatar av-buyer">${initials(l.name)}</div><div class="contact-info"><div class="contact-name">${esc(l.name)}</div><div class="contact-meta">${numFmt(l.budget)||'-'} · ${esc(l.phone||'')}</div></div><span class="badge badge-${l.heat||'warm'}">${{hot:'🔴',warm:'🟡',cold:'🔵'}[l.heat||'warm']}</span></div>`).join('')}
-        <button class="btn-secondary" style="width:100%;border:none;border-top:1px solid var(--border);border-radius:0 0 14px 14px;color:var(--blue);background:#fff" onclick="go('contact-form',{form:{type:'buyer',interestedIn:'${p.id}',district:'${esc(p.district||'')}',propType:'${esc(p.propType||'')}',budget:'${esc(p.price||'')}'},editId:null})">➕ İlgilenen / Arayan Ekle</button>
+        <button class="btn-secondary" style="width:100%;border:none;border-top:1px solid var(--border);border-radius:0 0 14px 14px;color:var(--blue);background:#fff" onclick="go('contact-form',{form:{type:'buyer',interestedIn:'${p.id}',district:'${esc(p.district||'')}',propType:'${esc(p.propType||'')}',transType:'${esc(p.transType||'')}',budget:'${esc(p.price||'')}'},editId:null})">➕ İlgilenen / Arayan Ekle</button>
       </div>
     </div>
   </div>`;
@@ -976,30 +987,37 @@ function buildPropertyForm(){
           <input type="checkbox" style="width:20px;height:20px;accent-color:var(--blue)" ${f.isPortfolio?'checked':''} onchange="setF('isPortfolio',this.checked,true)">
           <span style="font-size:15px;font-weight:700;color:${f.isPortfolio?'var(--blue)':'var(--text)'}">🌟 Benim Yetkili Portföyüm</span>
         </label>
-        
-        <label style="display:flex;align-items:center;gap:10px;padding:14px;background:#fff;border:2px solid ${f.isSecret?'#8b5cf6':'var(--border)'};border-radius:12px;cursor:pointer;margin-top:10px;transition:all 0.2s">
-          <input type="checkbox" style="width:20px;height:20px;accent-color:#8b5cf6" ${f.isSecret?'checked':''} onchange="setF('isSecret',this.checked,true)">
-          <span style="font-size:15px;font-weight:700;color:${f.isSecret?'#8b5cf6':'var(--text)'}">🤫 Gizli (El Altı) Portföy</span>
-        </label>
       </div>
 
       <div class="form-group"><label class="form-label">Mülk Başlığı</label><input class="form-input" type="text" placeholder="Karşıyaka 3+1 Daire" value="${esc(f.title||'')}" oninput="setF('title',this.value)"></div>
       <div class="form-group"><label class="form-label">İlan Numarası</label><input class="form-input" type="text" placeholder="123456789" value="${esc(f.adNumber||'')}" oninput="setF('adNumber',this.value)"></div>
       <div class="form-group"><label class="form-label">İlan Linki</label><input class="form-input" type="url" placeholder="https://sahibinden.com/..." value="${esc(f.link||'')}" oninput="setF('link',this.value)"></div>
       <div class="form-group"><label class="form-label">Satıcı (Sahibi)</label><select class="form-input" onchange="setF('ownerId',this.value)"><option value="">Seçiniz</option>${sellers.map(s=>`<option value="${s.id}" ${f.ownerId===s.id?'selected':''}>${esc(s.name)}</option>`).join('')}</select></div>
-      <div class="form-group"><label class="form-label">Mülk Türü</label><select class="form-input" onchange="setF('propType',this.value)"><option value="">Seçiniz</option>${PROP_TYPES.map(p=>`<option value="${p}" ${f.propType===p?'selected':''}>${p}</option>`).join('')}</select></div>
+      
+      <div class="row2">
+        <div class="form-group"><label class="form-label">İşlem Türü</label>
+          <select class="form-input" onchange="setF('transType',this.value)"><option value="">Seçiniz</option>${['Satılık','Kiralık','Devren Kiralık'].map(t=>`<option value="${t}" ${f.transType===t?'selected':''}>${t}</option>`).join('')}</select>
+        </div>
+        <div class="form-group"><label class="form-label">Mülk Türü</label>
+          <select class="form-input" onchange="setF('propType',this.value)"><option value="">Seçiniz</option>${PROP_TYPES.map(p=>`<option value="${p}" ${f.propType===p?'selected':''}>${p}</option>`).join('')}</select>
+        </div>
+      </div>
+      
       <div class="row2">
         <div class="form-group"><label class="form-label">Semt / İlçe</label><input class="form-input" type="text" placeholder="Karşıyaka" value="${esc(f.district||'')}" oninput="setF('district',this.value)"></div>
         <div class="form-group"><label class="form-label">Oda</label><select class="form-input" onchange="setF('rooms',this.value)"><option value="">-</option>${ROOMS.map(r=>`<option value="${r}" ${f.rooms===r?'selected':''}>${r}</option>`).join('')}</select></div>
       </div>
       <div class="row2">
+        <div class="form-group"><label class="form-label">Bina Yaşı</label><input class="form-input" type="number" placeholder="Örn: 5" value="${esc(f.age||'')}" oninput="setF('age',this.value)"></div>
         <div class="form-group"><label class="form-label">m²</label><input class="form-input" type="number" placeholder="90" value="${esc(f.sqm||'')}" oninput="setF('sqm',this.value)"></div>
-        <div class="form-group"><label class="form-label">Fiyat (₺)</label><input class="form-input" type="text" placeholder="3000000" value="${esc(f.price||'')}" oninput="setF('price',this.value)"></div>
       </div>
+
+      <div class="form-group"><label class="form-label">Fiyat (₺)</label><input class="form-input" type="text" placeholder="3000000" value="${esc(f.price||'')}" oninput="setF('price',this.value)"></div>
+      
       <div class="form-group"><label class="form-label">Durum</label>
         <div class="type-grid" style="grid-template-columns:1fr 1fr 1fr">
           <div class="type-opt ${pStatus==='avail'?'sel-avail':''}" onclick="setF('status','avail',true)">Satışta</div>
-          <div class="type-opt ${pStatus==='reserved'?'sel-reserved':''}" onclick="setF('status','reserved',true)">Rezerve</div>
+          <div class="type-opt ${pStatus==='reserved'?'sel-reserved':''}" onclick="setF('status','reserved',true)">Kapora Alındı</div>
           <div class="type-opt ${pStatus==='sold'?'sel-sold':''}" onclick="setF('status','sold',true)">Satıldı</div>
         </div>
       </div>
@@ -1033,10 +1051,9 @@ function delPropertyFromForm(id){
   back();
 }
 
-/* ====== YENİ: MESAJLAR & KİŞİ SEÇTİRME (V4.4) ====== */
+/* ====== MESAJLAR & KİŞİ SEÇTİRME ====== */
 function buildMessages(){
-  if(S.sendTplId) return buildSendTplModal(); // Kime gönderilecek paneli
-  
+  if(S.sendTplId) return buildSendTplModal();
   const tab=S.params.tab||'templates';
   return `<div class="content">${buildHeader('Mesajlar')}
     <div class="segment">
@@ -1055,12 +1072,10 @@ function buildTemplates(){
   </div>`;
 }
 
-/* 🚀 YENİ: SPAM KORUMALI MANUEL GÖNDERİM LİSTESİ */
 function buildSendTplModal(){
   const tpl = S.data.templates.find(t=>t.id===S.sendTplId);
   const contacts = S.data.contacts.filter(c=>c.phone);
   
-  // EĞER GÖNDERİM MODUNDAYSAK (Tarayıcı engeline takılmayan liste)
   if(S.waQueueMode) {
      const cs = S.data.contacts.filter(c=>S.sendTplSelected.includes(c.id));
      return `<div class="content">${buildHeader('Gönderim Listesi', false, `<button class="header-action" onclick="S.sendTplId=null;S.waQueueMode=false;render()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>`)}
@@ -1084,7 +1099,6 @@ function buildSendTplModal(){
      </div></div>`;
   }
 
-  // SEÇİM MODUNDAYSAK
   const allSel = contacts.length > 0 && S.sendTplSelected.length === contacts.length;
   return `<div class="content">${buildHeader('Kime Gönderilecek?', true, `<button class="header-action" onclick="S.sendTplId=null;render()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>`)}
     <div style="padding:16px">
@@ -1242,6 +1256,13 @@ function buildMatching(){
   buyers.forEach(b=>{
     props.forEach(p=>{
       let score=0;let tags=[];
+      
+      // İşlem Türü Çakışması (Biri kiralık biri satılıksa anında ele)
+      if(b.transType&&p.transType) {
+         if(b.transType !== p.transType) { score = -999; }
+         else { score+=20; tags.push('🤝 İşlem Türü'); }
+      }
+
       if(b.district&&p.district&&b.district.trim().toLowerCase()===p.district.trim().toLowerCase()){score+=40;tags.push('📍 Semt');}
       if(b.propType&&p.propType&&b.propType===p.propType){score+=30;tags.push('🏠 Tür');}
       if(b.budget&&p.price){
@@ -1252,6 +1273,8 @@ function buildMatching(){
         }
       }
       if(b.rooms&&p.rooms&&b.rooms===p.rooms){score+=10;tags.push('🚪 Oda');}
+      if(b.age&&p.age&&b.age===p.age){score+=10;tags.push('🏢 Yaş');}
+
       if(score>=50&&tags.length>=2)matches.push({buyer:b,prop:p,owner:sellers.find(x=>x.id===p.ownerId),score,tags});
     });
   });
@@ -1261,10 +1284,10 @@ function buildMatching(){
   return `<div class="content">${buildHeader('Akıllı Eşleştirme',true)}
     <div style="padding:14px 16px">
       <div style="font-size:13px;color:var(--muted);margin-bottom:14px;padding:10px 12px;background:#f8fafc;border-radius:10px;border:1px solid var(--border)">
-        Eşleşme için <b>semt + mülk türü</b> gibi en az 2 kriterin uyuşması ve bütçenin aşılmaması gerekir.
+        Eşleşme için <b>işlem türünün (satılık/kiralık) tutması</b>, bütçenin aşılmaması ve semt + mülk türü gibi kriterlerin uyuşması gerekir.
       </div>
       ${matches.length===0
-        ?`<div class="empty"><div class="empty-icon">🔗</div><div class="empty-title">Eşleşme bulunamadı</div><div class="empty-sub">Alıcı ve mülk bilgilerini (semt, tür, bütçe) doldurduğunuzda eşleştirme yapılır.</div></div>`
+        ?`<div class="empty"><div class="empty-icon">🔗</div><div class="empty-title">Eşleşme bulunamadı</div><div class="empty-sub">Alıcı ve mülk bilgilerini doldurduğunuzda eşleştirme yapılır.</div></div>`
         :matches.map(m=>{
           const color=m.score>=80?'var(--green)':m.score>=60?'var(--amber)':'var(--coral)';
           return `<div class="match-card">
